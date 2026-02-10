@@ -274,17 +274,27 @@
         const urlParams = new URLSearchParams(window.location.search);
         const encodedData = urlParams.get('data');
         
+        console.log('URL:', window.location.href);
+        console.log('Encoded data length:', encodedData ? encodedData.length : 0);
+        
         if (!encodedData) {
           throw new Error('No data parameter found in URL');
         }
         
         const data = JSON.parse(atob(encodedData));
+        console.log('Parsed data:', data);
         return data;
       } catch (error) {
         console.error('Error loading data:', error);
+        console.error('Error details:', error.message, error.stack);
         document.querySelector('.container').innerHTML = `
           <div class="error-message">
             <strong>❌ Error:</strong> Invalid or missing data. Please use the link from your email.
+            <br><br>
+            <details>
+              <summary>Debug Info (click to expand)</summary>
+              <pre style="text-align: left; font-size: 11px; margin-top: 10px;">${error.message}\n\nURL: ${window.location.href}\n\nData param exists: ${urlParams.get('data') ? 'YES' : 'NO'}</pre>
+            </details>
           </div>
         `;
         return null;
@@ -298,6 +308,42 @@
     // Display client info
     document.getElementById('client-info').textContent = 
       `Client: ${data.client_name} | ${data.saas_url} | Session: ${data.session_id}`;
+    
+    // EDGE CASE: Zero URLs
+    if (!data.urls || data.urls.length === 0) {
+      document.querySelector('.container').innerHTML = `
+        <div class="header">
+          <h1>⚠️ No URLs Available</h1>
+          <p>Session: ${data.session_id}</p>
+        </div>
+        <div class="content">
+          <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 24px; border-radius: 8px; text-align: center;">
+            <h3 style="color: #856404; margin-bottom: 16px;">Unable to Identify Pages for Analysis</h3>
+            <p style="color: #856404; margin-bottom: 12px;">
+              We were unable to find any product or feature pages on <strong>${data.saas_url}</strong>.
+            </p>
+            <p style="color: #856404; margin-bottom: 20px;">This could indicate:</p>
+            <ul style="text-align: left; display: inline-block; color: #856404; margin-bottom: 24px;">
+              <li style="margin: 8px 0;">The website has an unusual structure</li>
+              <li style="margin: 8px 0;">Product information is embedded in JavaScript</li>
+              <li style="margin: 8px 0;">The site blocks automated access</li>
+              <li style="margin: 8px 0;">The URL provided was incorrect</li>
+            </ul>
+            <div style="background: white; padding: 20px; border-radius: 6px; margin-top: 20px;">
+              <p style="color: #333; font-weight: 600; margin-bottom: 8px;">📧 Next Steps:</p>
+              <p style="color: #666;">
+                Please contact our support team at 
+                <a href="mailto:ai-support@impactable.com" style="color: #17305d; font-weight: 600;">ai-support@impactable.com</a>
+              </p>
+              <p style="color: #999; font-size: 13px; margin-top: 16px;">
+                Include your Session ID: <strong>${data.session_id}</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+      return; // Stop execution
+    }
     
     // Render URL checklist
     const urlList = document.getElementById('url-list');
