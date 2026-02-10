@@ -9,7 +9,7 @@
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #EFF2FF 0%, #EFF2FF 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -249,7 +249,7 @@
           <input 
             type="text" 
             id="saas_url" 
-            name="SaaS URL"
+            name="field-0"
             placeholder="e.g., salesforce.com or https://www.hubspot.com"
             required
           >
@@ -261,7 +261,7 @@
           <input 
             type="text" 
             id="client_name" 
-            name="Client Name"
+            name="field-1"
             placeholder="e.g., Acme Corp"
             required
           >
@@ -272,7 +272,7 @@
           <input 
             type="email" 
             id="email" 
-            name="Email"
+            name="field-2"
             placeholder="you@company.com"
             required
           >
@@ -284,7 +284,7 @@
           <input 
             type="text" 
             id="access_code" 
-            name="Access Code"
+            name="field-3"
             placeholder="Enter your access code"
             required
           >
@@ -310,8 +310,8 @@
     const submitBtn = document.getElementById('submit-btn');
     const errorDiv = document.getElementById('error');
     
-    // Your n8n Form Trigger webhook URL
-    const WEBHOOK_URL = 'https://n8n.app.everythink.pro/webhook/8bffd6db-c30d-4b0e-a6f5-c80c209c03fa';
+    // IMPORTANT: Use /form/ endpoint for Form Trigger, not /webhook/
+    const FORM_URL = 'https://n8n.app.everythink.pro/form/8bffd6db-c30d-4b0e-a6f5-c80c209c03fa';
     
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -324,7 +324,7 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submitting...';
       
-      // Get form data
+      // Get form data - n8n Form Trigger expects field-0, field-1, etc.
       const formData = new FormData(form);
       const data = {};
       formData.forEach((value, key) => {
@@ -332,33 +332,33 @@
       });
       
       // Basic validation
-      if (!data['SaaS URL']) {
+      if (!data['field-0']) {
         showError('Please enter a SaaS website URL');
         resetButton();
         return;
       }
       
-      if (!data['Client Name']) {
+      if (!data['field-1']) {
         showError('Please enter your company name');
         resetButton();
         return;
       }
       
-      if (!data['Email'] || !isValidEmail(data['Email'])) {
+      if (!data['field-2'] || !isValidEmail(data['field-2'])) {
         showError('Please enter a valid email address');
         resetButton();
         return;
       }
       
-      if (!data['Access Code']) {
+      if (!data['field-3']) {
         showError('Please enter your access code');
         resetButton();
         return;
       }
       
       try {
-        // Submit to n8n webhook
-        const response = await fetch(WEBHOOK_URL, {
+        // Submit to n8n Form Trigger
+        const response = await fetch(FORM_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -372,8 +372,8 @@
             <div class="success-message">
               <div class="icon">✅</div>
               <h2>Analysis Started!</h2>
-              <p>We've received your request and started analyzing <strong>${data['SaaS URL']}</strong>.</p>
-              <p>You'll receive an email at <strong>${data['Email']}</strong> within the next few minutes with:</p>
+              <p>We've received your request and started analyzing <strong>${data['field-0']}</strong>.</p>
+              <p>You'll receive an email at <strong>${data['field-2']}</strong> within the next few minutes with:</p>
               <ul style="text-align: left; display: inline-block; margin: 20px 0;">
                 <li style="margin: 8px 0;">List of discovered product pages</li>
                 <li style="margin: 8px 0;">Option to review and approve pages</li>
