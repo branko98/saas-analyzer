@@ -3,170 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SaaS Product Analyzer - Start Analysis</title>
+  <title>SaaS Product Analyzer</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .container { background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 600px; width: 100%; overflow: hidden; }
-    .header { background: linear-gradient(135deg, #17305d 0%, #0f1f3d 100%); color: white; padding: 40px 30px; text-align: center; }
-    .header h1 { font-size: 32px; margin-bottom: 10px; font-weight: 700; }
-    .header p { font-size: 16px; opacity: 0.9; line-height: 1.5; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .container { background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 600px; width: 100%; }
+    .header { background: linear-gradient(135deg, #17305d 0%, #0f1f3d 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0; }
+    .header h1 { font-size: 32px; margin-bottom: 10px; }
     .content { padding: 40px 30px; }
-    .info-box { background: #f0f4f8; border-left: 4px solid #17305d; padding: 20px; margin-bottom: 30px; border-radius: 8px; }
-    .info-box h3 { color: #17305d; margin-bottom: 10px; font-size: 18px; }
-    .info-box ul { list-style: none; padding-left: 0; }
-    .info-box ul li { padding: 8px 0; padding-left: 24px; position: relative; color: #555; font-size: 14px; }
-    .info-box ul li:before { content: "✓"; position: absolute; left: 0; color: #28a745; font-weight: bold; }
     .form-group { margin-bottom: 24px; }
-    .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px; }
-    .form-group input { width: 100%; padding: 14px 16px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: all 0.2s; font-family: inherit; }
-    .form-group input:focus { outline: none; border-color: #17305d; box-shadow: 0 0 0 3px rgba(23, 48, 93, 0.1); }
-    .form-group input::placeholder { color: #999; }
-    .form-group small { display: block; margin-top: 6px; color: #666; font-size: 13px; }
-    .access-code-info { background: #fff3cd; border: 1px solid #ffc107; padding: 12px 16px; border-radius: 6px; margin-top: 8px; font-size: 13px; color: #856404; }
-    .submit-btn { width: 100%; background: linear-gradient(135deg, #17305d 0%, #0f1f3d 100%); color: white; padding: 16px; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 10px; }
-    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(23, 48, 93, 0.4); }
-    .submit-btn:active { transform: translateY(0); }
-    .submit-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-    .error-message { background: #fee; border: 1px solid #fcc; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; color: #c33; font-size: 14px; display: none; }
-    .success-message { background: white; padding: 60px 40px; text-align: center; }
-    .success-message .icon { font-size: 64px; margin-bottom: 20px; }
-    .success-message h2 { color: #28a745; font-size: 32px; margin-bottom: 16px; }
-    .success-message p { color: #666; font-size: 16px; line-height: 1.6; margin-bottom: 12px; }
-    .footer { background: #f8f9fa; padding: 20px 30px; text-align: center; font-size: 13px; color: #666; border-top: 1px solid #e0e0e0; }
-    .footer a { color: #17305d; text-decoration: none; }
-    .footer a:hover { text-decoration: underline; }
-    @media (max-width: 600px) { .header { padding: 30px 20px; } .header h1 { font-size: 26px; } .content { padding: 30px 20px; } .footer { padding: 16px 20px; } }
+    .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; }
+    .form-group input { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; }
+    .form-group input:focus { outline: none; border-color: #17305d; }
+    .submit-btn { width: 100%; background: linear-gradient(135deg, #17305d 0%, #0f1f3d 100%); color: white; padding: 16px; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; cursor: pointer; }
+    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(23,48,93,0.4); }
+    .error-message { background: #fee; border: 1px solid #fcc; padding: 12px; border-radius: 6px; margin-bottom: 20px; color: #c33; display: none; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>🔍 SaaS Product Analyzer</h1>
-      <p>AI-powered competitive analysis for SaaS products</p>
+      <h1>🔍 SaaS Analyzer</h1>
+      <p>AI-powered competitive analysis</p>
     </div>
-    
     <div class="content">
-      <div class="info-box">
-        <h3>What We'll Do:</h3>
-        <ul>
-          <li>Analyze your competitor's website structure</li>
-          <li>Extract product features and capabilities</li>
-          <li>Generate competitor intelligence report</li>
-          <li>Provide keyword insights for Google Ads</li>
-        </ul>
-      </div>
-      
       <div id="error" class="error-message"></div>
-      
-      <form id="analysis-form">
+      <form id="form">
         <div class="form-group">
-          <label for="saas_url">SaaS Website URL *</label>
-          <input type="text" id="saas_url" placeholder="e.g., salesforce.com or https://www.hubspot.com" required>
-          <small>Enter the competitor's website you want to analyze</small>
+          <label>SaaS Website URL *</label>
+          <input type="text" id="url" required>
         </div>
-        
         <div class="form-group">
-          <label for="client_name">Your Company Name *</label>
-          <input type="text" id="client_name" placeholder="e.g., Acme Corp" required>
+          <label>Company Name *</label>
+          <input type="text" id="company" required>
         </div>
-        
         <div class="form-group">
-          <label for="email">Your Email *</label>
-          <input type="email" id="email" placeholder="you@company.com" required>
-          <small>We'll send analysis updates and results to this email</small>
+          <label>Email *</label>
+          <input type="email" id="email" required>
         </div>
-        
         <div class="form-group">
-          <label for="access_code">Access Code *</label>
-          <input type="text" id="access_code" placeholder="Enter your access code" required>
-          <div class="access-code-info">
-            🔒 Access code required. If you don't have one, contact us at <a href="mailto:ai-support@impactable.com">ai-support@impactable.com</a>
-          </div>
+          <label>Access Code *</label>
+          <input type="text" id="code" required>
         </div>
-        
-        <button type="submit" class="submit-btn" id="submit-btn">Start Analysis →</button>
+        <button type="submit" class="submit-btn" id="btn">Start Analysis →</button>
       </form>
     </div>
-    
-    <div class="footer">
-      Need help? Contact us at <a href="mailto:ai-support@impactable.com">ai-support@impactable.com</a>
-    </div>
   </div>
-
   <script>
-    const form = document.getElementById('analysis-form');
-    const submitBtn = document.getElementById('submit-btn');
-    const errorDiv = document.getElementById('error');
-    
-    // n8n Form Trigger endpoint - NE DIRAMO WORKFLOW, SAMO ŠALJEMO PODATKE
-    const FORM_URL = 'https://n8n.app.everythink.pro/form/8bffd6db-c30d-4b0e-a6f5-c80c209c03fa';
+    const form = document.getElementById('form');
+    const btn = document.getElementById('btn');
+    const err = document.getElementById('error');
     
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      errorDiv.style.display = 'none';
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting...';
+      err.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
       
-      const saasUrl = document.getElementById('saas_url').value.trim();
-      const clientName = document.getElementById('client_name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const accessCode = document.getElementById('access_code').value.trim();
-      
-      if (!saasUrl || !clientName || !email || !accessCode) {
-        showError('Please fill in all required fields');
-        resetButton();
-        return;
-      }
-      
-      if (!isValidEmail(email)) {
-        showError('Please enter a valid email address');
-        resetButton();
-        return;
-      }
-      
-      // KLJUČNO: Šaljemo podatke sa TAČNIM imenima koja workflow očekuje
-      const payload = {
-        "SaaS URL": saasUrl,
-        "Client Name": clientName,
-        "Email": email,
-        "Access Code": accessCode
-      };
+      // KLJUČNA PROMENA: Šaljemo kao FormData, NE JSON!
+      const formData = new FormData();
+      formData.append('SaaS URL', document.getElementById('url').value.trim());
+      formData.append('Client Name', document.getElementById('company').value.trim());
+      formData.append('Email', document.getElementById('email').value.trim());
+      formData.append('Access Code', document.getElementById('code').value.trim());
       
       try {
-        const response = await fetch(FORM_URL, {
+        const res = await fetch('https://n8n.app.everythink.pro/form/8bffd6db-c30d-4b0e-a6f5-c80c209c03fa', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: formData  // ← FormData automatski koristi multipart/form-data
         });
         
-        if (response.ok) {
-          document.querySelector('.container').innerHTML = `
-            <div class="success-message">
-              <div class="icon">✅</div>
-              <h2>Analysis Started!</h2>
-              <p>We've received your request and started analyzing <strong>${saasUrl}</strong>.</p>
-              <p>You'll receive an email at <strong>${email}</strong> within the next few minutes with:</p>
-              <ul style="text-align: left; display: inline-block; margin: 20px 0;">
-                <li style="margin: 8px 0;">List of discovered product pages</li>
-                <li style="margin: 8px 0;">Option to review and approve pages</li>
-                <li style="margin: 8px 0;">Next steps for the analysis</li>
-              </ul>
-              <p style="color: #999; font-size: 14px; margin-top: 30px;">Check your spam folder if you don't see the email within 5 minutes.</p>
-            </div>
-          `;
+        if (res.ok) {
+          document.querySelector('.container').innerHTML = '<div style="padding:60px;text-align:center"><div style="font-size:64px">✅</div><h2 style="color:#28a745;margin:20px 0">Success!</h2><p>Check your email for next steps.</p></div>';
         } else {
           throw new Error('Server error');
         }
       } catch (error) {
-        showError('Failed to submit. Please try again or contact support.');
-        resetButton();
+        err.textContent = '❌ Failed. Try again.';
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Start Analysis →';
       }
     });
-    
-    function showError(msg) { errorDiv.textContent = '❌ ' + msg; errorDiv.style.display = 'block'; }
-    function resetButton() { submitBtn.disabled = false; submitBtn.textContent = 'Start Analysis →'; }
-    function isValidEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
   </script>
 </body>
 </html>
