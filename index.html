@@ -286,11 +286,6 @@
     color: var(--text-secondary);
     margin-top: 4px;
   }
-  .feature-badges {
-    display: flex;
-    gap: 6px;
-    margin-top: 6px;
-  }
   .badge {
     font-size: 0.72rem;
     font-weight: 600;
@@ -658,10 +653,6 @@ function createFeatureEl(feature, idx, isSuggested = false, parentName = '') {
       <div class="feature-name">${esc(feature.name)}</div>
       ${feature.url ? `<a class="feature-url" href="${esc(feature.url)}" target="_blank" rel="noopener">${esc(feature.url)}</a>` : ''}
       ${feature.short_description ? `<div class="feature-desc">${esc(feature.short_description)}</div>` : ''}
-      <div class="feature-badges">
-        <span class="badge ${isSuggested ? 'badge-suggested' : 'badge-feature'}">${isSuggested ? 'Suggested' : 'Feature'}</span>
-        ${parentName ? `<span class="badge badge-parent">from: ${esc(parentName)}</span>` : ''}
-      </div>
     </div>
   `;
 
