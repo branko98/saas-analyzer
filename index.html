@@ -1,90 +1,785 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SaaS Product Analyzer</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .container { background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 600px; width: 100%; }
-    .header { background: linear-gradient(135deg, #17305d 0%, #0f1f3d 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0; }
-    .header h1 { font-size: 32px; margin-bottom: 10px; }
-    .content { padding: 40px 30px; }
-    .form-group { margin-bottom: 24px; }
-    .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; }
-    .form-group input { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; }
-    .form-group input:focus { outline: none; border-color: #17305d; }
-    .submit-btn { width: 100%; background: linear-gradient(135deg, #17305d 0%, #0f1f3d 100%); color: white; padding: 16px; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; cursor: pointer; }
-    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(23,48,93,0.4); }
-    .error-message { background: #fee; border: 1px solid #fcc; padding: 12px; border-radius: 6px; margin-bottom: 20px; color: #c33; display: none; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feature Discovery — SaaS Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f8f8f6;
+    --surface: #ffffff;
+    --border: #e4e2dd;
+    --text: #1a1a18;
+    --text-secondary: #6b6963;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-light: #eff4ff;
+    --suggested-bg: #fef9ec;
+    --suggested-border: #f0d680;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ─── Header ─── */
+  .page-header {
+    margin-bottom: 40px;
+  }
+  .page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  /* ─── Form ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    box-shadow: var(--shadow);
+  }
+
+  .form-group {
+    margin-bottom: 22px;
+  }
+  .form-group:last-of-type {
+    margin-bottom: 28px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+  .form-group input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+  .form-group input::placeholder {
+    color: #a8a49d;
+  }
+  .form-hint {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    width: 100%;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-lg);
+  }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover {
+    background: var(--bg);
+  }
+
+  /* ─── Loading ─── */
+  .loading-view {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto 24px;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .loading-view h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .loading-view p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+  .loading-steps {
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }
+  .loading-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: color 0.3s;
+  }
+  .loading-step.active {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .loading-step.done {
+    color: var(--success);
+  }
+  .step-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-icon svg { width: 16px; height: 16px; }
+
+  /* ─── Results / Checklist ─── */
+  .results-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .results-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+  .feature-count {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .core-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .feature-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    align-items: flex-start;
+  }
+  .feature-item:hover {
+    border-color: #ccc;
+  }
+  .feature-item.suggested {
+    background: var(--suggested-bg);
+    border-color: var(--suggested-border);
+    margin-left: 28px;
+  }
+  .feature-item.deselected {
+    opacity: 0.45;
+  }
+
+  .feature-checkbox {
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+  .feature-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .feature-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .feature-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+  }
+  .feature-url {
+    font-size: 0.78rem;
+    color: var(--accent);
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .feature-url:hover {
+    text-decoration: underline;
+  }
+  .feature-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .feature-badges {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .badge-feature {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+  .badge-suggested {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .badge-parent {
+    background: #f3f4f6;
+    color: #6b7280;
+    text-transform: none;
+    font-weight: 500;
+  }
+
+  /* ─── Add feature ─── */
+  .add-feature-section {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    margin-bottom: 28px;
+  }
+  .add-feature-toggle {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--accent);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+    padding: 0;
+  }
+  .add-feature-toggle:hover {
+    text-decoration: underline;
+  }
+  .add-feature-form {
+    display: none;
+    margin-top: 14px;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: 8px;
+    gap: 10px;
+  }
+  .add-feature-form.open {
+    display: flex;
+    flex-direction: column;
+  }
+  .add-feature-form input {
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 0.88rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    outline: none;
+  }
+  .add-feature-form input:focus {
+    border-color: var(--accent);
+  }
+  .add-feature-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .add-feature-actions .btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  /* ─── Error ─── */
+  .error-view {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .error-view .error-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+  .error-view h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--danger);
+  }
+  .error-view p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+
+  /* ─── Views toggle ─── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 600px) {
+    .container { padding: 28px 16px 60px; }
+    .card { padding: 22px 18px; }
+    .feature-item.suggested { margin-left: 14px; }
+    .page-header h1 { font-size: 1.4rem; }
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>🔍 SaaS Analyzer</h1>
-      <p>AI-powered competitive analysis</p>
-    </div>
-    <div class="content">
-      <div id="error" class="error-message"></div>
-      <form id="form">
+
+<div class="container">
+  <div class="page-header">
+    <h1>Feature Discovery</h1>
+    <p>Analyze a SaaS product's features for Google Ads targeting.</p>
+  </div>
+
+  <!-- ═══ FORM VIEW ═══ -->
+  <div id="formView" class="view active">
+    <div class="card">
+      <form id="discoveryForm" autocomplete="off">
         <div class="form-group">
-          <label>SaaS Website URL *</label>
-          <input type="text" id="url" required>
+          <label for="clientName">Client Name</label>
+          <input type="text" id="clientName" placeholder="e.g. Octopus Deploy" required>
         </div>
         <div class="form-group">
-          <label>Company Name *</label>
-          <input type="text" id="company" required>
+          <label for="homepageUrl">Homepage URL</label>
+          <input type="url" id="homepageUrl" placeholder="https://octopus.com" required>
+          <div class="form-hint">Main website URL — we'll scrape navigation and feature pages automatically.</div>
         </div>
         <div class="form-group">
-          <label>Email *</label>
-          <input type="email" id="email" required>
+          <label for="userEmail">Your Email</label>
+          <input type="email" id="userEmail" placeholder="you@company.com" required>
         </div>
-        <div class="form-group">
-          <label>Access Code *</label>
-          <input type="text" id="code" required>
-        </div>
-        <button type="submit" class="submit-btn" id="btn">Start Analysis →</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          Discover Features
+        </button>
       </form>
     </div>
   </div>
-  <script>
-    const form = document.getElementById('form');
-    const btn = document.getElementById('btn');
-    const err = document.getElementById('error');
-    
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      err.style.display = 'none';
-      btn.disabled = true;
-      btn.textContent = 'Submitting...';
-      
-      // KLJUČNA PROMENA: Šaljemo kao FormData, NE JSON!
-      const formData = new FormData();
-      formData.append('SaaS URL', document.getElementById('url').value.trim());
-      formData.append('Client Name', document.getElementById('company').value.trim());
-      formData.append('Email', document.getElementById('email').value.trim());
-      formData.append('Access Code', document.getElementById('code').value.trim());
-      
-      try {
-        const res = await fetch('https://n8n.app.everythink.pro/form/8bffd6db-c30d-4b0e-a6f5-c80c209c03fa', {
-          method: 'POST',
-          body: formData  // ← FormData automatski koristi multipart/form-data
-        });
-        
-        if (res.ok) {
-          document.querySelector('.container').innerHTML = '<div style="padding:60px;text-align:center"><div style="font-size:64px">✅</div><h2 style="color:#28a745;margin:20px 0">Success!</h2><p>Check your email for next steps.</p></div>';
-        } else {
-          throw new Error('Server error');
-        }
-      } catch (error) {
-        err.textContent = '❌ Failed. Try again.';
-        err.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Start Analysis →';
-      }
+
+  <!-- ═══ LOADING VIEW ═══ -->
+  <div id="loadingView" class="view">
+    <div class="card">
+      <div class="loading-view">
+        <div class="spinner"></div>
+        <h2>Analyzing <span id="loadingClientName">...</span></h2>
+        <p>Scraping website and identifying features</p>
+        <div class="loading-steps">
+          <div class="loading-step active" id="step1">
+            <span class="step-icon"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/></svg></span>
+            <span>Scraping homepage</span>
+          </div>
+          <div class="loading-step" id="step2">
+            <span class="step-icon"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/></svg></span>
+            <span>Finding feature pages</span>
+          </div>
+          <div class="loading-step" id="step3">
+            <span class="step-icon"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/></svg></span>
+            <span>AI analysis in progress</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RESULTS VIEW ═══ -->
+  <div id="resultsView" class="view">
+    <div class="card">
+      <div class="results-header">
+        <h2 id="resultsTitle">Features</h2>
+        <span class="feature-count" id="featureCount"></span>
+      </div>
+      <p class="core-desc" id="coreDescription"></p>
+
+      <div class="feature-list" id="featureList">
+        <!-- Features rendered here -->
+      </div>
+
+      <div class="add-feature-section">
+        <button class="add-feature-toggle" onclick="toggleAddFeature()">+ Add a feature manually</button>
+        <div class="add-feature-form" id="addFeatureForm">
+          <input type="text" id="newFeatureName" placeholder="Feature name">
+          <input type="url" id="newFeatureUrl" placeholder="URL (optional)">
+          <input type="text" id="newFeatureDesc" placeholder="Short description (optional)">
+          <div class="add-feature-actions">
+            <button class="btn btn-primary" onclick="addManualFeature()">Add</button>
+            <button class="btn btn-secondary" onclick="toggleAddFeature()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="startAnalysisBtn" onclick="submitFinalSelection()">
+        Start Full Analysis →
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ ERROR VIEW ═══ -->
+  <div id="errorView" class="view">
+    <div class="card">
+      <div class="error-view">
+        <div class="error-icon">⚠</div>
+        <h2>Something went wrong</h2>
+        <p id="errorMessage">Unable to analyze the website. Please check the URL and try again.</p>
+        <button class="btn btn-secondary" onclick="resetToForm()">← Try Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ╔══════════════════════════════════════════╗
+// ║  CONFIGURATION — Update these URLs       ║
+// ╚══════════════════════════════════════════╝
+const CONFIG = {
+  // Module A webhook — returns feature list
+  WEBHOOK_DISCOVER: 'https://n8n.app.everythink.pro/webhook/feature-discovery',
+  // Module B webhook — receives approved features (update when WF2 exists)
+  WEBHOOK_ANALYZE: 'https://n8n.app.everythink.pro/webhook/start-analysis',
+  // Request timeout in ms (webhook waits for full analysis)
+  TIMEOUT: 120000
+};
+
+// ─── State ───
+let discoveryResult = null;
+
+// ─── SVG icons ───
+const ICON_PENDING = '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/></svg>';
+const ICON_ACTIVE = '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>';
+const ICON_DONE = '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8l1.5 1.5 3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+// ─── View switching ───
+function showView(viewId) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+}
+
+function resetToForm() {
+  showView('formView');
+  document.getElementById('discoveryForm').reset();
+}
+
+// ─── Loading step animation ───
+function setStep(stepNum) {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('step' + i);
+    el.classList.remove('active', 'done');
+    el.querySelector('.step-icon').innerHTML = ICON_PENDING;
+    if (i < stepNum) {
+      el.classList.add('done');
+      el.querySelector('.step-icon').innerHTML = ICON_DONE;
+    } else if (i === stepNum) {
+      el.classList.add('active');
+      el.querySelector('.step-icon').innerHTML = ICON_ACTIVE;
+    }
+  }
+}
+
+// ─── Form submit ───
+document.getElementById('discoveryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const clientName = document.getElementById('clientName').value.trim();
+  let homepageUrl = document.getElementById('homepageUrl').value.trim();
+  const userEmail = document.getElementById('userEmail').value.trim();
+
+  if (!clientName || !homepageUrl || !userEmail) return;
+
+  // Ensure URL has protocol
+  if (!/^https?:\/\//i.test(homepageUrl)) {
+    homepageUrl = 'https://' + homepageUrl;
+  }
+
+  // Show loading
+  document.getElementById('loadingClientName').textContent = clientName;
+  showView('loadingView');
+  setStep(1);
+
+  // Simulate progress steps while waiting
+  const stepTimers = [
+    setTimeout(() => setStep(2), 3000),
+    setTimeout(() => setStep(3), 8000)
+  ];
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+
+    const response = await fetch(CONFIG.WEBHOOK_DISCOVER, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_name: clientName,
+        homepage_url: homepageUrl,
+        user_email: userEmail
+      }),
+      signal: controller.signal
     });
-  </script>
+
+    clearTimeout(timeout);
+    stepTimers.forEach(t => clearTimeout(t));
+
+    if (!response.ok) {
+      throw new Error(`Server error (${response.status})`);
+    }
+
+    const data = await response.json();
+
+    if (!data.success || !data.features || data.features.length === 0) {
+      throw new Error('No features found. The website may not have discoverable feature pages.');
+    }
+
+    discoveryResult = data;
+    renderResults(data);
+    showView('resultsView');
+
+  } catch (err) {
+    stepTimers.forEach(t => clearTimeout(t));
+    document.getElementById('errorMessage').textContent =
+      err.name === 'AbortError'
+        ? 'Request timed out. The website may be too large or slow to scrape.'
+        : err.message || 'Unable to analyze the website.';
+    showView('errorView');
+  }
+});
+
+// ─── Render results ───
+function renderResults(data) {
+  document.getElementById('resultsTitle').textContent = data.client_name || 'Features';
+  document.getElementById('coreDescription').textContent = data.core_description || '';
+
+  const list = document.getElementById('featureList');
+  list.innerHTML = '';
+
+  let totalCount = 0;
+
+  data.features.forEach((feature, fi) => {
+    list.appendChild(createFeatureEl(feature, fi));
+    totalCount++;
+
+    if (feature.expansions && feature.expansions.length > 0) {
+      feature.expansions.forEach((exp, ei) => {
+        list.appendChild(createFeatureEl(exp, `${fi}-exp-${ei}`, true, feature.name));
+        totalCount++;
+      });
+    }
+  });
+
+  updateCount();
+}
+
+function createFeatureEl(feature, idx, isSuggested = false, parentName = '') {
+  const div = document.createElement('div');
+  div.className = 'feature-item' + (isSuggested ? ' suggested' : '') + (!feature.selected ? ' deselected' : '');
+  div.dataset.idx = idx;
+
+  const checked = feature.selected !== false ? 'checked' : '';
+
+  div.innerHTML = `
+    <div class="feature-checkbox">
+      <input type="checkbox" ${checked} onchange="toggleFeature(this)">
+    </div>
+    <div class="feature-body">
+      <div class="feature-name">${esc(feature.name)}</div>
+      ${feature.url ? `<a class="feature-url" href="${esc(feature.url)}" target="_blank" rel="noopener">${esc(feature.url)}</a>` : ''}
+      ${feature.short_description ? `<div class="feature-desc">${esc(feature.short_description)}</div>` : ''}
+      <div class="feature-badges">
+        <span class="badge ${isSuggested ? 'badge-suggested' : 'badge-feature'}">${isSuggested ? 'Suggested' : 'Feature'}</span>
+        ${parentName ? `<span class="badge badge-parent">from: ${esc(parentName)}</span>` : ''}
+      </div>
+    </div>
+  `;
+
+  return div;
+}
+
+function toggleFeature(checkbox) {
+  const item = checkbox.closest('.feature-item');
+  item.classList.toggle('deselected', !checkbox.checked);
+  updateCount();
+}
+
+function updateCount() {
+  const total = document.querySelectorAll('.feature-item').length;
+  const selected = document.querySelectorAll('.feature-item input[type="checkbox"]:checked').length;
+  document.getElementById('featureCount').textContent = `${selected} of ${total} selected`;
+}
+
+// ─── Add feature manually ───
+function toggleAddFeature() {
+  document.getElementById('addFeatureForm').classList.toggle('open');
+}
+
+function addManualFeature() {
+  const name = document.getElementById('newFeatureName').value.trim();
+  if (!name) return;
+
+  const url = document.getElementById('newFeatureUrl').value.trim();
+  const desc = document.getElementById('newFeatureDesc').value.trim();
+
+  const feature = {
+    name,
+    url: url || '',
+    short_description: desc || '',
+    type: 'Manual',
+    selected: true,
+    expansions: []
+  };
+
+  const list = document.getElementById('featureList');
+  const idx = 'manual-' + Date.now();
+  list.appendChild(createFeatureEl(feature, idx));
+
+  // Clear form
+  document.getElementById('newFeatureName').value = '';
+  document.getElementById('newFeatureUrl').value = '';
+  document.getElementById('newFeatureDesc').value = '';
+  toggleAddFeature();
+  updateCount();
+}
+
+// ─── Submit final selection ───
+async function submitFinalSelection() {
+  const items = document.querySelectorAll('.feature-item');
+  const selectedFeatures = [];
+
+  items.forEach(item => {
+    const cb = item.querySelector('input[type="checkbox"]');
+    if (!cb.checked) return;
+
+    const name = item.querySelector('.feature-name')?.textContent || '';
+    const url = item.querySelector('.feature-url')?.textContent || '';
+    const desc = item.querySelector('.feature-desc')?.textContent || '';
+    const isSuggested = item.classList.contains('suggested');
+    const parentBadge = item.querySelector('.badge-parent');
+    const parent = parentBadge ? parentBadge.textContent.replace('from: ', '') : '';
+
+    selectedFeatures.push({
+      name,
+      url,
+      short_description: desc,
+      type: isSuggested ? 'Suggested' : item.dataset.idx?.startsWith('manual') ? 'Manual' : 'Feature',
+      parent_feature: parent
+    });
+  });
+
+  if (selectedFeatures.length === 0) {
+    alert('Select at least one feature to analyze.');
+    return;
+  }
+
+  const btn = document.getElementById('startAnalysisBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    const payload = {
+      client_name: discoveryResult?.client_name || '',
+      core_description: discoveryResult?.core_description || '',
+      user_email: discoveryResult?.user_email || '',
+      features: selectedFeatures
+    };
+
+    const response = await fetch(CONFIG.WEBHOOK_ANALYZE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error('Submit failed');
+
+    btn.textContent = '✓ Analysis Started';
+    btn.style.background = 'var(--success)';
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Start Full Analysis →';
+    alert('Failed to submit. Please try again.');
+  }
+}
+
+// ─── Utility ───
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+</script>
+
 </body>
 </html>
