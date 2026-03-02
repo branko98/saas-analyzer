@@ -323,7 +323,8 @@
   function validateDiscoverForm() {
     var nameOk = dom.dName.value.trim().length > 0;
     var urlOk = dom.dUrl.value.trim().length > 0;
-    setDisabled(dom.dSubmit, !nameOk || !urlOk || state.phase === 'discovering');
+    var emailOk = dom.dEmail.value.trim().length > 0;
+    setDisabled(dom.dSubmit, !nameOk || !urlOk || !emailOk || state.phase === 'discovering');
   }
 
 
@@ -348,9 +349,9 @@
 
     var name = dom.dName.value.trim();
     var url = dom.dUrl.value.trim();
-    var email = dom.dEmail.value.trim() || CONFIG.defaultEmail;
+    var email = dom.dEmail.value.trim();
 
-    if (!name || !url) return;
+    if (!name || !url || !email) return;
 
     state.clientName = name;
     state.homepageUrl = url;
@@ -577,7 +578,7 @@
     var payload = {
       client_name: state.clientName,
       core_description: state.coreDesc,
-      user_email: state.userEmail || CONFIG.defaultEmail,
+      user_email: state.userEmail,
       features: selected.map(function (f) {
         return {
           name: f.name.trim(),
@@ -774,7 +775,7 @@
   function checkUrlParams() {
     var params = new URLSearchParams(window.location.search);
     var runId = params.get('run');
-    if (!runId || !runId.trim()) return;
+    if (!runId || !runId.trim()) return false;
 
     state.runId = runId.trim();
     state.phase = 'running';
@@ -796,6 +797,7 @@
     tryLoadRunInfo(state.runId);
 
     startPolling();
+    return true;
   }
 
   // Attempt to load sheet_url from Master Log Runs tab
@@ -847,6 +849,7 @@
     dom.dForm.addEventListener('submit', handleDiscover);
     dom.dName.addEventListener('input', validateDiscoverForm);
     dom.dUrl.addEventListener('input', validateDiscoverForm);
+    dom.dEmail.addEventListener('input', validateDiscoverForm);
 
     dom.rList.addEventListener('click', handleFeatureClick);
     dom.rList.addEventListener('input', handleFeatureInput);
@@ -856,8 +859,10 @@
 
     dom.sReset.addEventListener('click', handleReset);
 
-    // Check if resuming from URL param
-    checkUrlParams();
+    // Check if resuming from URL param, otherwise set initial state
+    if (!checkUrlParams()) {
+      validateDiscoverForm();
+    }
   }
 
   // Boot
