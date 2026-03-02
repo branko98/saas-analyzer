@@ -1,44 +1,71 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impactable — Client Positioning & Market Analysis</title>
+<link rel="icon" type="image/webp" href="data:image/webp;base64,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">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0c1524;font-family:'DM Sans',system-ui,sans-serif;color:#e8edf4}
+input:focus,textarea:focus,select:focus{border-color:#4c9acb!important;outline:none}
+::placeholder{color:#3e5a7a}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.cta:hover:not(:disabled){box-shadow:0 4px 24px #4c9acb44;transform:translateY(-1px)}
+.cta:active:not(:disabled){transform:translateY(0)}
+.sec-btn:hover:not(:disabled){border-color:#4c9acb!important;color:#4c9acb!important}
+.feat-row:hover{background:#152540!important}
+.add-btn:hover{border-color:#4c9acb!important;color:#4c9acb!important;background:#4c9acb18!important}
+.link-card:hover{border-color:#4c9acb!important}
+.evt-row{animation:slideIn .3s ease forwards}
+.rm-btn:hover{color:#ef4444!important;background:#2a0f0f!important}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#162a4a;border-radius:3px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback} = React;
 
-// ═══════════════════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════════════════
+const LOGO_SRC = "data:image/webp;base64,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";
 const DISCOVERY_URL = 'https://n8n.app.everythink.pro/webhook/feature-discovery';
 const ANALYSIS_URL  = 'https://n8n.app.everythink.pro/webhook/start-analysis';
 const MASTER_LOG_ID = '1JzJAaQsf7lZt9IYu0DjnYe3sadFjzc3NiuLHp_ZGypw';
 const POLL_INTERVAL = 8000;
 
-// ═══════════════════════════════════════════════════════════
-// BRAND
-// ═══════════════════════════════════════════════════════════
 const C = {
-  navy: '#17305d', navyLight: '#1e3f73', navyDark: '#0f2141',
-  blue: '#4c9acb', bluePale: '#4c9acb18', blueGlow: '#4c9acb44',
-  bg: '#0c1524', surface: '#111d32', surfaceRaised: '#152540',
-  border: '#1c3054', borderSoft: '#162a4a',
-  text: '#e8edf4', textSec: '#8fa3be', textMuted: '#5a7394', textDim: '#3e5a7a',
-  green: '#22c55e', greenBg: '#0d2818', greenBdr: '#15532d',
-  amber: '#f5a623', amberBg: '#2a1f0a', amberBdr: '#5c4216',
-  red: '#ef4444', redBg: '#2a0f0f', redBdr: '#6b1f1f',
-  white: '#fff',
+  navy:'#17305d', navyLight:'#1e3f73', navyDark:'#0f2141',
+  blue:'#4c9acb', bluePale:'#4c9acb18', blueGlow:'#4c9acb44',
+  bg:'#0c1524', surface:'#111d32', raised:'#152540',
+  border:'#1c3054', borderSoft:'#162a4a',
+  text:'#e8edf4', sec:'#8fa3be', muted:'#5a7394', dim:'#3e5a7a',
+  green:'#22c55e', greenBg:'#0d2818', greenBdr:'#15532d',
+  amber:'#f5a623', amberBg:'#2a1f0a', amberBdr:'#5c4216',
+  red:'#ef4444', redBg:'#2a0f0f', redBdr:'#6b1f1f',
+  white:'#fff',
 };
-const F = `'DM Sans',system-ui,sans-serif`;
-const M = `'IBM Plex Mono','SF Mono',monospace`;
+const MF = "'IBM Plex Mono',monospace";
 
-// ═══════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════
 const parseGviz = (text) => {
   try {
-    const m = text.match(/setResponse\(([\s\S]*)\)\s*;?\s*$/);
+    const m = text.match(/setResponse\(([\s\S]*?)\)\s*;?\s*$/);
     const d = JSON.parse(m ? m[1] : text.replace(/^[^(]*\(/,'').replace(/\);?\s*$/,''));
     if (!d.table?.rows) return [];
     return d.table.rows.map(r => {
       const c = r.c||[];
-      return { runId:c[0]?.v||'', timestamp:c[1]?.v||'', feature:c[2]?.v||'',
-               event:c[3]?.v||'', message:c[4]?.v||'', type:c[5]?.v||'' };
+      return {runId:c[0]?.v||'',timestamp:c[1]?.v||'',feature:c[2]?.v||'',
+              event:c[3]?.v||'',message:c[4]?.v||'',type:c[5]?.v||''};
     });
-  } catch { return []; }
+  } catch(e) { return []; }
 };
 
 const fmtTime = (v) => {
@@ -50,550 +77,408 @@ const fmtTime = (v) => {
         .toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     }
     const d = new Date(v);
-    return isNaN(d)?'':d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  } catch { return ''; }
+    return isNaN(d.getTime())?'':d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  } catch(e) { return ''; }
 };
 
-const evtStyle = {
-  system:        {c:C.blue, bg:C.bluePale, i:'◆'},
-  progress:      {c:C.blue, bg:C.bluePale, i:'▸'},
-  alert_warning: {c:C.amber,bg:C.amberBg,  i:'▲'},
-  alert_critical:{c:C.red,  bg:C.redBg,    i:'✕'},
-  complete:      {c:C.green,bg:C.greenBg,  i:'✓'},
+const evtS = {
+  system:{c:C.blue,bg:C.bluePale,i:'\u25C6'},
+  progress:{c:C.blue,bg:C.bluePale,i:'\u25B8'},
+  alert_warning:{c:C.amber,bg:C.amberBg,i:'\u25B2'},
+  alert_critical:{c:C.red,bg:C.redBg,i:'\u2715'},
+  complete:{c:C.green,bg:C.greenBg,i:'\u2713'},
 };
 
-// ═══════════════════════════════════════════════════════════
-// SHARED UI
-// ═══════════════════════════════════════════════════════════
-const inp = {
-  width:'100%', padding:'9px 12px', background:C.bg, border:`1px solid ${C.border}`,
-  borderRadius:7, color:C.text, fontSize:13, fontFamily:F, outline:'none', transition:'border-color .2s',
-};
+const inp = {width:'100%',padding:'9px 12px',background:C.bg,border:'1px solid '+C.border,
+  borderRadius:7,color:C.text,fontSize:13,fontFamily:"'DM Sans',sans-serif",outline:'none',
+  transition:'border-color .2s'};
 
-function Lbl({children,req}) {
-  return <label style={{display:'block',fontSize:11,fontWeight:600,color:C.textDim,
+function Lbl({children,req}){
+  return <label style={{display:'block',fontSize:11,fontWeight:600,color:C.dim,
     textTransform:'uppercase',letterSpacing:'.7px',marginBottom:6}}>
     {children}{req&&<span style={{color:C.blue,marginLeft:3}}>*</span>}
   </label>;
 }
 
-function Sec({icon,text,right,style={}}) {
-  return <div style={{fontSize:12,fontWeight:600,color:C.textSec,display:'flex',
+function Sec({icon,text,right,style={}}){
+  return <div style={{fontSize:12,fontWeight:600,color:C.sec,display:'flex',
     alignItems:'center',gap:7,marginBottom:14,...style}}>
     <span style={{color:C.blue,fontSize:10}}>{icon}</span>{text}
-    {right && <span style={{marginLeft:'auto',fontWeight:400,color:C.textDim}}>{right}</span>}
+    {right&&<span style={{marginLeft:'auto',fontWeight:400,color:C.dim}}>{right}</span>}
   </div>;
 }
 
-function Spin({size=14,color=C.white}) {
+function Spin({size=14,color=C.white}){
   return <span style={{display:'inline-block',width:size,height:size,
-    border:`2px solid ${color}33`,borderTopColor:color,borderRadius:'50%',animation:'spin .7s linear infinite'}}/>;
+    border:'2px solid '+color+'33',borderTopColor:color,borderRadius:'50%',
+    animation:'spin .7s linear infinite'}}/>;
 }
 
-function Btn({children,onClick,disabled,variant='primary',style={}}) {
-  const base = variant==='primary' ? {
-    background:`linear-gradient(135deg,${C.navy},${C.navyLight})`,
-    border:`1px solid ${C.navyLight}`,color:C.white,fontWeight:600,
-  } : {
-    background:'transparent',border:`1px solid ${C.border}`,color:C.textMuted,fontWeight:500,
-  };
+function Btn({children,onClick,disabled,variant='primary',style={}}){
+  const base = variant==='primary'?{
+    background:'linear-gradient(135deg,'+C.navy+','+C.navyLight+')',
+    border:'1px solid '+C.navyLight,color:C.white,fontWeight:600,
+  }:{background:'transparent',border:'1px solid '+C.border,color:C.muted,fontWeight:500};
   return <button className={variant==='primary'?'cta':'sec-btn'} onClick={onClick} disabled={disabled}
     style={{padding:'12px 24px',borderRadius:10,fontSize:14,cursor:'pointer',
-      fontFamily:F,letterSpacing:'.3px',transition:'all .2s',
+      fontFamily:"'DM Sans',sans-serif",letterSpacing:'.3px',transition:'all .2s',
       opacity:disabled?.45:1,...base,...style}}>{children}</button>;
 }
 
-// ═══════════════════════════════════════════════════════════
-// MAIN
-// ═══════════════════════════════════════════════════════════
-export default function App() {
-  // Phase: discover | discovering | review | submitting | running | complete
-  const [phase, setPhase] = useState('discover');
-  const [clientName, setClientName] = useState('');
-  const [homepageUrl, setHomepageUrl] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [coreDesc, setCoreDesc] = useState('');
-  const [features, setFeatures] = useState([]);
-  const [runId, setRunId] = useState('');
-  const [sheetUrl, setSheetUrl] = useState('');
-  const [events, setEvents] = useState([]);
-  const [error, setError] = useState('');
-  const [pollErr, setPollErr] = useState(false);
-  const pollRef = useRef(null);
-  const endRef = useRef(null);
-  const featCountRef = useRef(0);
+function App(){
+  const [phase,setPhase]=useState('discover');
+  const [clientName,setClientName]=useState('');
+  const [homepageUrl,setHomepageUrl]=useState('');
+  const [userEmail,setUserEmail]=useState('');
+  const [coreDesc,setCoreDesc]=useState('');
+  const [features,setFeatures]=useState([]);
+  const [runId,setRunId]=useState('');
+  const [sheetUrl,setSheetUrl]=useState('');
+  const [events,setEvents]=useState([]);
+  const [error,setError]=useState('');
+  const [pollErr,setPollErr]=useState(false);
+  const pollRef=useRef(null);
+  const endRef=useRef(null);
+  const fcRef=useRef(0);
 
-  // ── Discovery ──
-  const handleDiscover = async () => {
-    if (!clientName.trim() || !homepageUrl.trim()) return;
-    setPhase('discovering'); setError('');
-    try {
-      const res = await fetch(DISCOVERY_URL, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          client_name: clientName.trim(),
-          homepage_url: homepageUrl.trim(),
-          user_email: userEmail.trim() || 'branko.j.98@gmail.com',
-        })
-      });
-      if (!res.ok) throw new Error(`Server error (${res.status})`);
-      const data = await res.json();
-      if (!data.success) throw new Error('Discovery failed');
-
-      setCoreDesc(data.core_description || '');
-
-      // Flatten features + expansions into single list with selected state
-      const flat = [];
-      (data.features||[]).forEach(f => {
-        flat.push({
-          id: Math.random(), name: f.name, url: f.url||'',
-          short_description: f.short_description||'', type: f.type||'Feature',
-          selected: f.selected !== false, parent: '',
-        });
-        (f.expansions||[]).forEach(ex => {
-          flat.push({
-            id: Math.random(), name: ex.name, url: ex.url||f.url||'',
-            short_description: ex.short_description||'', type: 'Sub-feature',
-            selected: ex.selected === true, parent: f.name,
-          });
+  const handleDiscover=async()=>{
+    if(!clientName.trim()||!homepageUrl.trim())return;
+    setPhase('discovering');setError('');
+    try{
+      const res=await fetch(DISCOVERY_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({client_name:clientName.trim(),homepage_url:homepageUrl.trim(),
+          user_email:userEmail.trim()||'branko.j.98@gmail.com'})});
+      if(!res.ok)throw new Error('Server error ('+res.status+')');
+      const data=await res.json();
+      if(!data.success)throw new Error('Discovery failed');
+      setCoreDesc(data.core_description||'');
+      const flat=[];
+      (data.features||[]).forEach(f=>{
+        flat.push({id:Math.random(),name:f.name,url:f.url||'',short_description:f.short_description||'',
+          type:f.type||'Feature',selected:f.selected!==false,parent:''});
+        (f.expansions||[]).forEach(ex=>{
+          flat.push({id:Math.random(),name:ex.name,url:ex.url||f.url||'',short_description:ex.short_description||'',
+            type:'Sub-feature',selected:ex.selected===true,parent:f.name});
         });
       });
-      setFeatures(flat);
-      setPhase('review');
-    } catch (err) { setError(err.message); setPhase('discover'); }
+      setFeatures(flat);setPhase('review');
+    }catch(err){setError(err.message);setPhase('discover');}
   };
 
-  // ── Feature management ──
-  const toggleFeature = (id) => setFeatures(p=>p.map(f=>f.id===id?{...f,selected:!f.selected}:f));
-  const updateFeat = (id,k,v) => setFeatures(p=>p.map(f=>f.id===id?{...f,[k]:v}:f));
-  const removeFeat = (id) => setFeatures(p=>p.filter(f=>f.id!==id));
-  const addCustom = () => setFeatures(p=>[...p,{
-    id:Math.random(), name:'', url:'', short_description:'',
-    type:'Feature', selected:true, parent:'', custom:true,
-  }]);
+  const toggleFeat=id=>setFeatures(p=>p.map(f=>f.id===id?{...f,selected:!f.selected}:f));
+  const updateFeat=(id,k,v)=>setFeatures(p=>p.map(f=>f.id===id?{...f,[k]:v}:f));
+  const removeFeat=id=>setFeatures(p=>p.filter(f=>f.id!==id));
+  const addCustom=()=>setFeatures(p=>[...p,{id:Math.random(),name:'',url:'',short_description:'',
+    type:'Feature',selected:true,parent:'',custom:true}]);
 
-  // ── Submit to WF2 ──
-  const handleAnalyze = async () => {
-    const selected = features.filter(f=>f.selected && f.name.trim());
-    if (selected.length===0) return;
-    setPhase('submitting'); setError('');
-    featCountRef.current = selected.length;
-    try {
-      const res = await fetch(ANALYSIS_URL, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          client_name: clientName.trim(),
-          core_description: coreDesc.trim(),
-          user_email: userEmail.trim() || 'branko.j.98@gmail.com',
-          features: selected.map(f=>({
-            name:f.name.trim(), url:f.url.trim(),
-            short_description:f.short_description.trim(), type:f.type,
-            parent_feature: f.parent||'',
-          }))
-        })
-      });
-      if (!res.ok) throw new Error(`Server error (${res.status})`);
-      const data = await res.json();
-      if (!data.success) throw new Error(data.message||'Failed');
-      setRunId(data.run_id); setSheetUrl(data.sheet_url);
-      setPhase('running'); startPoll(data.run_id);
-    } catch (err) { setError(err.message); setPhase('review'); }
+  const handleAnalyze=async()=>{
+    const sel=features.filter(f=>f.selected&&f.name.trim());
+    if(!sel.length)return;
+    setPhase('submitting');setError('');fcRef.current=sel.length;
+    try{
+      const res=await fetch(ANALYSIS_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({client_name:clientName.trim(),core_description:coreDesc.trim(),
+          user_email:userEmail.trim()||'branko.j.98@gmail.com',
+          features:sel.map(f=>({name:f.name.trim(),url:f.url.trim(),
+            short_description:f.short_description.trim(),type:f.type,parent_feature:f.parent||''}))})});
+      if(!res.ok)throw new Error('Server error ('+res.status+')');
+      const data=await res.json();
+      if(!data.success)throw new Error(data.message||'Failed');
+      setRunId(data.run_id);setSheetUrl(data.sheet_url);
+      setPhase('running');startPoll(data.run_id);
+    }catch(err){setError(err.message);setPhase('review');}
   };
 
-  // ── Poll ──
-  const fetchEvts = useCallback(async (rid) => {
-    const tq = encodeURIComponent(`SELECT * WHERE A = '${rid}'`);
-    const url = `https://docs.google.com/spreadsheets/d/${MASTER_LOG_ID}/gviz/tq?tqx=out:json&sheet=Events&tq=${tq}&headers=1&_t=${Date.now()}`;
-    try {
-      const res = await fetch(url);
-      if (!res.ok){setPollErr(true);return;}
-      const rows = parseGviz(await res.text());
+  const fetchEvts=useCallback(async(rid)=>{
+    const tq=encodeURIComponent("SELECT * WHERE A = '"+rid+"'");
+    const url='https://docs.google.com/spreadsheets/d/'+MASTER_LOG_ID+'/gviz/tq?tqx=out:json&sheet=Events&tq='+tq+'&headers=1&_t='+Date.now();
+    try{
+      const res=await fetch(url);
+      if(!res.ok){setPollErr(true);return;}
+      const rows=parseGviz(await res.text());
       setPollErr(false);
-      if (rows.length>0) {
+      if(rows.length>0){
         setEvents(rows);
-        if (rows.some(r=>r.type==='complete')) {
+        if(rows.some(r=>r.type==='complete')){
           setPhase('complete');
-          if (pollRef.current){clearInterval(pollRef.current);pollRef.current=null;}
+          if(pollRef.current){clearInterval(pollRef.current);pollRef.current=null;}
         }
       }
-    } catch {setPollErr(true);}
+    }catch(e){setPollErr(true);}
   },[]);
 
-  const startPoll = useCallback((rid)=>{
+  const startPoll=useCallback((rid)=>{
     fetchEvts(rid);
-    pollRef.current = setInterval(()=>fetchEvts(rid), POLL_INTERVAL);
+    pollRef.current=setInterval(()=>fetchEvts(rid),POLL_INTERVAL);
   },[fetchEvts]);
 
   useEffect(()=>()=>{if(pollRef.current)clearInterval(pollRef.current);},[]);
   useEffect(()=>{
-    if(endRef.current&&phase==='running') endRef.current.scrollIntoView({behavior:'smooth',block:'nearest'});
+    if(endRef.current&&phase==='running')endRef.current.scrollIntoView({behavior:'smooth',block:'nearest'});
   },[events,phase]);
 
-  const handleReset = () => {
+  const handleReset=()=>{
     if(pollRef.current){clearInterval(pollRef.current);pollRef.current=null;}
-    setPhase('discover'); setClientName(''); setHomepageUrl(''); setUserEmail('');
-    setCoreDesc(''); setFeatures([]); setRunId(''); setSheetUrl('');
-    setEvents([]); setError(''); setPollErr(false);
+    setPhase('discover');setClientName('');setHomepageUrl('');setUserEmail('');
+    setCoreDesc('');setFeatures([]);setRunId('');setSheetUrl('');
+    setEvents([]);setError('');setPollErr(false);
   };
 
-  // ── Derived ──
-  const selectedCount = features.filter(f=>f.selected&&f.name.trim()).length;
-  const done = events.filter(e=>e.event==='FEATURE_DONE').length;
-  const total = featCountRef.current || selectedCount;
-  const warns = events.filter(e=>e.type==='alert_warning');
-  const crits = events.filter(e=>e.type==='alert_critical');
-  const compEvt = events.find(e=>e.type==='complete');
-  const isComp = phase==='complete';
-  const pct = isComp?100:Math.min(95,total>0?Math.round((done/total)*90)+5:3);
+  const selCount=features.filter(f=>f.selected&&f.name.trim()).length;
+  const done=events.filter(e=>e.event==='FEATURE_DONE').length;
+  const total=fcRef.current||selCount;
+  const warns=events.filter(e=>e.type==='alert_warning');
+  const crits=events.filter(e=>e.type==='alert_critical');
+  const compEvt=events.find(e=>e.type==='complete');
+  const isComp=phase==='complete';
+  const pct=isComp?100:Math.min(95,total>0?Math.round((done/total)*90)+5:3);
+  const dis=phase==='discovering'||phase==='submitting';
 
-  // ═══════════════════════════════════════════════════════════
-  // RENDER
-  // ═══════════════════════════════════════════════════════════
   return (
-    <div style={{minHeight:'100vh',background:C.bg,color:C.text,fontFamily:F}}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        body{background:${C.bg}}
-        input:focus,textarea:focus,select:focus{border-color:${C.blue}!important;outline:none}
-        ::placeholder{color:${C.textDim}}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes slideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-        .cta:hover:not(:disabled){box-shadow:0 4px 24px ${C.blueGlow};transform:translateY(-1px)}
-        .cta:active:not(:disabled){transform:translateY(0)}
-        .sec-btn:hover:not(:disabled){border-color:${C.blue}!important;color:${C.blue}!important}
-        .feat-row:hover{background:${C.surfaceRaised}!important}
-        .add-btn:hover{border-color:${C.blue}!important;color:${C.blue}!important;background:${C.bluePale}!important}
-        .link-card:hover{border-color:${C.blue}!important}
-        .evt-row{animation:slideIn .3s ease forwards}
-        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}
-        ::-webkit-scrollbar-thumb{background:${C.borderSoft};border-radius:3px}
-      `}</style>
+    <div style={{maxWidth:800,margin:'0 auto',padding:'36px 20px 60px'}}>
+      <div style={{marginBottom:44}}>
+        <img src={LOGO_SRC} alt="Impactable" style={{height:38,width:'auto'}}/>
+      </div>
 
-      <div style={{maxWidth:800,margin:'0 auto',padding:'36px 20px 60px'}}>
+      {phase!=='discover'&&(
+        <div style={{display:'flex',gap:4,marginBottom:28}}>
+          {['Discovery','Review','Analysis'].map((label,i)=>{
+            const sp=[['discovering'],['review','submitting'],['running','complete']];
+            const active=sp[i].includes(phase);
+            const past=i===0?['review','submitting','running','complete'].includes(phase)
+              :i===1?['running','complete'].includes(phase):isComp;
+            return(
+              <div key={i} style={{flex:1,textAlign:'center'}}>
+                <div style={{height:3,borderRadius:2,marginBottom:6,
+                  background:past?C.green:active?C.blue:C.border,transition:'background .4s'}}/>
+                <span style={{fontSize:11,color:past?C.green:active?C.blue:C.dim,
+                  fontWeight:active?600:400}}>{label}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-        {/* ═══ HEADER ═══ */}
-        <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:44}}>
-          <div style={{width:40,height:40,borderRadius:8,
-            background:`linear-gradient(135deg,${C.navy},${C.navyLight})`,
-            display:'flex',alignItems:'center',justifyContent:'center',
-            color:C.white,fontSize:17,fontWeight:700,boxShadow:`0 2px 12px ${C.navy}66`}}>I</div>
-          <div>
-            <div style={{fontSize:18,fontWeight:700,letterSpacing:'.4px'}}>IMPACTABLE</div>
-            <div style={{fontSize:11,color:C.textMuted,letterSpacing:'.3px',marginTop:1}}>
-              Automated Client Positioning & Market Analysis
-            </div>
+      {error&&(
+        <div style={{background:C.redBg,border:'1px solid '+C.redBdr,borderRadius:10,
+          padding:'13px 18px',marginBottom:14,color:'#fca5a5',fontSize:13,
+          display:'flex',alignItems:'center',gap:10}}>
+          <span style={{fontSize:15}}>{'\u2715'}</span><span>{error}</span>
+        </div>
+      )}
+
+      {(phase==='discover'||phase==='discovering')&&(
+        <div style={{background:C.surface,border:'1px solid '+C.border,borderRadius:12,padding:28}}>
+          <div style={{fontSize:15,fontWeight:600,color:C.text,marginBottom:4}}>Start New Analysis</div>
+          <div style={{fontSize:13,color:C.muted,marginBottom:24,lineHeight:1.5}}>
+            Enter the client's website and we'll automatically discover their product features.
           </div>
+          <div style={{display:'flex',flexDirection:'column',gap:16}}>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+              <div><Lbl req>Client Name</Lbl>
+                <input style={inp} placeholder="e.g. Kong, Sisense" value={clientName}
+                  onChange={e=>setClientName(e.target.value)} disabled={dis}/></div>
+              <div><Lbl req>Homepage URL</Lbl>
+                <input style={inp} placeholder="https://konghq.com" value={homepageUrl}
+                  onChange={e=>setHomepageUrl(e.target.value)} disabled={dis}/></div>
+            </div>
+            <div><Lbl>Your Email</Lbl>
+              <input style={inp} type="email" placeholder="email@company.com" value={userEmail}
+                onChange={e=>setUserEmail(e.target.value)} disabled={dis}/></div>
+          </div>
+          <Btn onClick={handleDiscover} disabled={!clientName.trim()||!homepageUrl.trim()||dis}
+            style={{width:'100%',marginTop:24}}>
+            {phase==='discovering'?
+              <span style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
+                <Spin/> Discovering Features...</span>:'Discover Features'}
+          </Btn>
+          {phase==='discovering'&&(
+            <div style={{textAlign:'center',marginTop:14,fontSize:12,color:C.dim}}>
+              Scanning website and analyzing features. This takes 30-60 seconds...
+            </div>
+          )}
+        </div>
+      )}
+
+      {(phase==='review'||phase==='submitting')&&(<>
+        <div style={{background:C.surface,border:'1px solid '+C.border,borderRadius:12,
+          padding:'18px 22px',marginBottom:14}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+            <span style={{fontSize:14,fontWeight:600,color:C.text}}>{clientName}</span>
+            <span style={{fontSize:11,color:C.dim,fontFamily:MF}}>{homepageUrl}</span>
+          </div>
+          <Lbl>Core Description</Lbl>
+          <textarea style={{...inp,minHeight:56,resize:'vertical'}} value={coreDesc}
+            onChange={e=>setCoreDesc(e.target.value)} disabled={dis}/>
         </div>
 
-        {/* ═══ STEPPER ═══ */}
-        {phase !== 'discover' && (
-          <div style={{display:'flex',gap:4,marginBottom:28}}>
-            {['Discovery','Review','Analysis'].map((label,i) => {
-              const stepPhases = [['discovering'],['review','submitting'],['running','complete']];
-              const active = stepPhases[i].includes(phase);
-              const past = i===0 ? ['review','submitting','running','complete'].includes(phase)
-                : i===1 ? ['running','complete'].includes(phase) : isComp;
-              return (
-                <div key={i} style={{flex:1,textAlign:'center'}}>
-                  <div style={{height:3,borderRadius:2,marginBottom:6,
-                    background:past?C.green:active?C.blue:C.border,transition:'background .4s'}}/>
-                  <span style={{fontSize:11,color:past?C.green:active?C.blue:C.textDim,
-                    fontWeight:active?600:400}}>{label}</span>
+        <Sec icon={'\u25C6'} text="Discovered Features" right={selCount+' of '+features.length+' selected'}/>
+
+        <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:12}}>
+          {features.map(f=>(
+            <div key={f.id} className="feat-row" style={{
+              background:C.surface,border:'1px solid '+(f.selected?C.border:C.borderSoft),
+              borderRadius:10,padding:'14px 16px',transition:'all .2s',
+              opacity:f.selected?1:.5,marginLeft:f.parent?24:0}}>
+              <div style={{display:'flex',gap:12,alignItems:'flex-start'}}>
+                <button onClick={()=>toggleFeat(f.id)} disabled={dis}
+                  style={{width:20,height:20,borderRadius:5,flexShrink:0,marginTop:1,cursor:'pointer',
+                    border:'2px solid '+(f.selected?C.blue:C.border),
+                    background:f.selected?C.blue:'transparent',
+                    display:'flex',alignItems:'center',justifyContent:'center',
+                    color:C.white,fontSize:12,fontWeight:700,transition:'all .15s'}}>
+                  {f.selected?'\u2713':''}</button>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4,flexWrap:'wrap'}}>
+                    {f.custom?<input style={{...inp,padding:'4px 8px',fontSize:13,fontWeight:600}}
+                      placeholder="Feature name..." value={f.name}
+                      onChange={e=>updateFeat(f.id,'name',e.target.value)} disabled={dis}/>
+                    :<span style={{fontSize:13,fontWeight:600,color:C.text}}>{f.name}</span>}
+                    <span style={{fontSize:10,padding:'2px 8px',borderRadius:12,fontWeight:600,flexShrink:0,
+                      background:f.type==='Feature'?C.bluePale:f.type==='Core'?C.navy+'44':C.amber+'18',
+                      color:f.type==='Feature'?C.blue:f.type==='Core'?C.sec:C.amber}}>{f.type}</span>
+                  </div>
+                  {f.custom?<>
+                    <input style={{...inp,padding:'4px 8px',fontSize:12,marginBottom:4}}
+                      placeholder="Short description..." value={f.short_description}
+                      onChange={e=>updateFeat(f.id,'short_description',e.target.value)} disabled={dis}/>
+                    <input style={{...inp,padding:'4px 8px',fontSize:12}}
+                      placeholder="https://..." value={f.url}
+                      onChange={e=>updateFeat(f.id,'url',e.target.value)} disabled={dis}/>
+                  </>:<>
+                    <div style={{fontSize:12,color:C.muted,lineHeight:1.4}}>{f.short_description}</div>
+                    {f.url&&<div style={{fontSize:11,color:C.dim,fontFamily:MF,marginTop:2,
+                      overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.url}</div>}
+                  </>}
+                </div>
+                {f.custom&&<button className="rm-btn" onClick={()=>removeFeat(f.id)} disabled={dis}
+                  style={{background:'none',border:'none',color:C.dim,cursor:'pointer',
+                    fontSize:16,padding:'2px 6px',borderRadius:4,transition:'all .15s'}}>{'\u00D7'}</button>}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button className="add-btn" onClick={addCustom} disabled={dis}
+          style={{width:'100%',padding:'10px',background:'transparent',
+            border:'1px dashed '+C.border,borderRadius:10,
+            color:C.muted,fontSize:13,fontWeight:500,cursor:'pointer',
+            fontFamily:"'DM Sans',sans-serif",transition:'all .2s',marginBottom:8}}>
+          + Add Custom Feature</button>
+
+        <div style={{display:'flex',gap:10,marginTop:16}}>
+          <Btn variant="secondary" onClick={()=>{setPhase('discover');setFeatures([]);}}
+            disabled={dis}>{'\u2190'} Back</Btn>
+          <Btn onClick={handleAnalyze} disabled={selCount===0||dis} style={{flex:1}}>
+            {phase==='submitting'?
+              <span style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
+                <Spin/> Starting Analysis...</span>
+              :'Start Analysis \u2014 '+selCount+' feature'+(selCount!==1?'s':'')}
+          </Btn>
+        </div>
+      </>)}
+
+      {(phase==='running'||phase==='complete')&&(<>
+        {isComp&&(
+          <div style={{background:C.greenBg,border:'1px solid '+C.greenBdr,borderRadius:12,
+            padding:'26px 24px',textAlign:'center',marginBottom:16}}>
+            <div style={{width:44,height:44,borderRadius:'50%',margin:'0 auto 12px',
+              background:C.green+'1a',display:'flex',alignItems:'center',justifyContent:'center',
+              fontSize:20,color:C.green}}>{'\u2713'}</div>
+            <div style={{fontSize:17,fontWeight:700,color:C.green,marginBottom:6}}>Analysis Complete</div>
+            <div style={{fontSize:13,color:'#86efac',lineHeight:1.5}}>
+              {compEvt?.message||done+' feature'+(done!==1?'s':'')+' analyzed'}</div>
+            {(warns.length>0||crits.length>0)&&(
+              <div style={{display:'flex',gap:10,justifyContent:'center',marginTop:14,flexWrap:'wrap'}}>
+                {warns.length>0&&<span style={{padding:'3px 12px',borderRadius:20,fontSize:12,fontWeight:600,
+                  background:C.amberBg,color:C.amber,border:'1px solid '+C.amberBdr}}>
+                  {'\u25B2'} {warns.length} warning{warns.length!==1?'s':''}</span>}
+                {crits.length>0&&<span style={{padding:'3px 12px',borderRadius:20,fontSize:12,fontWeight:600,
+                  background:C.redBg,color:C.red,border:'1px solid '+C.redBdr}}>
+                  {'\u2715'} {crits.length} critical</span>}
+              </div>
+            )}
+          </div>
+        )}
+
+        <a href={sheetUrl} target="_blank" rel="noopener noreferrer" className="link-card"
+          style={{display:'block',textDecoration:'none',marginBottom:16,
+            background:C.surface,border:'1px solid '+C.border,borderRadius:12,
+            padding:'18px 22px',transition:'border-color .2s'}}>
+          <div style={{fontSize:10,color:C.muted,textTransform:'uppercase',
+            letterSpacing:'.8px',fontWeight:600,marginBottom:8,
+            display:'flex',alignItems:'center',gap:6}}>
+            <span style={{fontSize:13}}>{'\uD83D\uDCCA'}</span> Results Spreadsheet</div>
+          <div style={{fontSize:13,color:C.blue,fontFamily:MF,wordBreak:'break-all',lineHeight:1.4}}>
+            {sheetUrl}</div>
+        </a>
+
+        {!isComp&&(
+          <div style={{marginBottom:20}}>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:6,padding:'0 2px'}}>
+              <span style={{fontSize:12,color:C.muted}}>Processing features...</span>
+              <span style={{fontSize:12,color:C.blue,fontFamily:MF,fontWeight:500}}>{done}/{total}</span>
+            </div>
+            <div style={{height:3,background:C.border,borderRadius:2,overflow:'hidden'}}>
+              <div style={{height:'100%',borderRadius:2,width:pct+'%',
+                background:'linear-gradient(90deg,'+C.navy+','+C.blue+')',
+                backgroundSize:'200% 100%',animation:'shimmer 2s linear infinite',
+                transition:'width .8s ease'}}/></div>
+          </div>
+        )}
+
+        <div style={{background:C.surface,border:'1px solid '+C.border,borderRadius:12,padding:'18px 14px'}}>
+          <Sec icon={'\u25C6'} text="Event Log" style={{padding:'0 6px',marginBottom:10}}/>
+          {events.length===0&&!isComp&&(
+            <div style={{textAlign:'center',padding:'28px 16px',color:C.dim,fontSize:13}}>
+              <Spin size={16} color={C.dim}/>
+              <div style={{marginTop:8}}>Waiting for events...</div>
+            </div>
+          )}
+          <div style={{maxHeight:420,overflowY:'auto',paddingRight:4}}>
+            {events.map((evt,i)=>{
+              const s=evtS[evt.type]||evtS.system;
+              const isAl=evt.type==='alert_warning'||evt.type==='alert_critical';
+              return(
+                <div key={i} className="evt-row" style={{display:'flex',gap:12,padding:'10px 12px',
+                  borderRadius:8,marginBottom:4,alignItems:'flex-start',
+                  background:s.bg,borderLeft:isAl?'3px solid '+s.c:'3px solid transparent'}}>
+                  <div style={{width:22,height:22,borderRadius:6,flexShrink:0,marginTop:1,
+                    display:'flex',alignItems:'center',justifyContent:'center',
+                    fontSize:10,fontWeight:700,color:s.c,background:s.c+'18'}}>{s.i}</div>
+                  <div style={{fontFamily:MF,fontSize:11,color:C.dim,
+                    minWidth:64,marginTop:3,flexShrink:0}}>{fmtTime(evt.timestamp)}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    {evt.feature&&<div style={{fontSize:12,fontWeight:600,color:s.c,marginBottom:2}}>
+                      {evt.feature}</div>}
+                    <div style={{fontSize:13,color:isAl?'#ddd':C.sec,lineHeight:1.45,
+                      wordBreak:'break-word'}}>{evt.message}</div>
+                  </div>
                 </div>
               );
             })}
+            <div ref={endRef}/>
+          </div>
+        </div>
+
+        {!isComp?(
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',
+            gap:8,padding:'14px 0',fontSize:12,color:C.dim}}>
+            <div style={{width:6,height:6,borderRadius:'50%',
+              background:pollErr?C.amber:C.blue,animation:'pulse 2s ease-in-out infinite'}}/>
+            <span>{pollErr?'Retrying...':'Polling every '+(POLL_INTERVAL/1000)+'s'}</span>
+          </div>
+        ):(
+          <div style={{textAlign:'center',marginTop:14}}>
+            <Btn variant="secondary" onClick={handleReset}>{'\u2190'} New Analysis</Btn>
           </div>
         )}
-
-        {error && (
-          <div style={{background:C.redBg,border:`1px solid ${C.redBdr}`,borderRadius:10,
-            padding:'13px 18px',marginBottom:14,color:'#fca5a5',fontSize:13,
-            display:'flex',alignItems:'center',gap:10}}>
-            <span style={{fontSize:15}}>✕</span><span>{error}</span>
-          </div>
-        )}
-
-        {/* ═══════════ PHASE 1: DISCOVER ═══════════ */}
-        {(phase==='discover'||phase==='discovering') && (
-          <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:28}}>
-            <div style={{fontSize:15,fontWeight:600,color:C.text,marginBottom:4}}>
-              Start New Analysis
-            </div>
-            <div style={{fontSize:13,color:C.textMuted,marginBottom:24,lineHeight:1.5}}>
-              Enter the client's website URL and we'll automatically discover their product features.
-            </div>
-
-            <div style={{display:'flex',flexDirection:'column',gap:16}}>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-                <div>
-                  <Lbl req>Client Name</Lbl>
-                  <input style={inp} placeholder="e.g. Kong, Sisense"
-                    value={clientName} onChange={e=>setClientName(e.target.value)}
-                    disabled={phase==='discovering'}/>
-                </div>
-                <div>
-                  <Lbl req>Homepage URL</Lbl>
-                  <input style={inp} placeholder="https://konghq.com"
-                    value={homepageUrl} onChange={e=>setHomepageUrl(e.target.value)}
-                    disabled={phase==='discovering'}/>
-                </div>
-              </div>
-              <div>
-                <Lbl>Your Email</Lbl>
-                <input style={inp} type="email" placeholder="email@company.com"
-                  value={userEmail} onChange={e=>setUserEmail(e.target.value)}
-                  disabled={phase==='discovering'}/>
-              </div>
-            </div>
-
-            <Btn onClick={handleDiscover}
-              disabled={!clientName.trim()||!homepageUrl.trim()||phase==='discovering'}
-              style={{width:'100%',marginTop:24}}>
-              {phase==='discovering' ? (
-                <span style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
-                  <Spin/> Discovering Features...
-                </span>
-              ) : 'Discover Features'}
-            </Btn>
-
-            {phase==='discovering' && (
-              <div style={{textAlign:'center',marginTop:14,fontSize:12,color:C.textDim}}>
-                Scanning website and analyzing product features. This takes 30-60 seconds...
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ═══════════ PHASE 2: REVIEW ═══════════ */}
-        {(phase==='review'||phase==='submitting') && (<>
-
-          {/* Core info */}
-          <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,
-            padding:'18px 22px',marginBottom:14}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-              <span style={{fontSize:13,fontWeight:600,color:C.text}}>{clientName}</span>
-              <span style={{fontSize:11,color:C.textDim,fontFamily:M}}>{homepageUrl}</span>
-            </div>
-            <div>
-              <Lbl>Core Description</Lbl>
-              <textarea style={{...inp,minHeight:56,resize:'vertical'}}
-                value={coreDesc} onChange={e=>setCoreDesc(e.target.value)}
-                disabled={phase==='submitting'}/>
-            </div>
-          </div>
-
-          {/* Feature list */}
-          <Sec icon="◆" text="Discovered Features"
-            right={`${selectedCount} of ${features.length} selected`}/>
-
-          <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:12}}>
-            {features.map((f) => (
-              <div key={f.id} className="feat-row" style={{
-                background:C.surface,border:`1px solid ${f.selected?C.border:C.borderSoft}`,
-                borderRadius:10,padding:'14px 16px',transition:'all .2s',
-                opacity:f.selected?1:.5,
-                marginLeft:f.parent?24:0,
-              }}>
-                <div style={{display:'flex',gap:12,alignItems:'flex-start'}}>
-                  {/* Checkbox */}
-                  <button onClick={()=>toggleFeature(f.id)} disabled={phase==='submitting'}
-                    style={{
-                      width:20,height:20,borderRadius:5,flexShrink:0,marginTop:1,cursor:'pointer',
-                      border:`2px solid ${f.selected?C.blue:C.border}`,
-                      background:f.selected?C.blue:'transparent',
-                      display:'flex',alignItems:'center',justifyContent:'center',
-                      color:C.white,fontSize:12,fontWeight:700,transition:'all .15s',
-                    }}>{f.selected?'✓':''}</button>
-
-                  <div style={{flex:1,minWidth:0}}>
-                    {/* Name + type badge */}
-                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
-                      {f.custom ? (
-                        <input style={{...inp,padding:'4px 8px',fontSize:13,fontWeight:600}}
-                          placeholder="Feature name..."
-                          value={f.name} onChange={e=>updateFeat(f.id,'name',e.target.value)}
-                          disabled={phase==='submitting'}/>
-                      ) : (
-                        <span style={{fontSize:13,fontWeight:600,color:C.text}}>{f.name}</span>
-                      )}
-                      <span style={{
-                        fontSize:10,padding:'2px 8px',borderRadius:12,fontWeight:600,flexShrink:0,
-                        background: f.type==='Feature'?C.bluePale:f.type==='Core'?`${C.navy}44`:`${C.amber}18`,
-                        color: f.type==='Feature'?C.blue:f.type==='Core'?C.textSec:C.amber,
-                      }}>{f.type}</span>
-                    </div>
-
-                    {/* Description */}
-                    <div style={{fontSize:12,color:C.textMuted,lineHeight:1.4,marginBottom:f.custom?6:0}}>
-                      {f.custom ? (
-                        <input style={{...inp,padding:'4px 8px',fontSize:12}}
-                          placeholder="Short description..."
-                          value={f.short_description} onChange={e=>updateFeat(f.id,'short_description',e.target.value)}
-                          disabled={phase==='submitting'}/>
-                      ) : f.short_description}
-                    </div>
-
-                    {f.custom && (
-                      <input style={{...inp,padding:'4px 8px',fontSize:12,marginTop:4}}
-                        placeholder="https://..."
-                        value={f.url} onChange={e=>updateFeat(f.id,'url',e.target.value)}
-                        disabled={phase==='submitting'}/>
-                    )}
-
-                    {/* URL */}
-                    {!f.custom && f.url && (
-                      <div style={{fontSize:11,color:C.textDim,fontFamily:M,marginTop:2,
-                        overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.url}</div>
-                    )}
-                  </div>
-
-                  {/* Remove for custom */}
-                  {f.custom && (
-                    <button onClick={()=>removeFeat(f.id)} disabled={phase==='submitting'}
-                      style={{background:'none',border:'none',color:C.textDim,cursor:'pointer',
-                        fontSize:16,padding:'2px 6px',borderRadius:4}}>×</button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button className="add-btn" onClick={addCustom} disabled={phase==='submitting'}
-            style={{width:'100%',padding:'10px',background:'transparent',
-              border:`1px dashed ${C.border}`,borderRadius:10,
-              color:C.textMuted,fontSize:13,fontWeight:500,cursor:'pointer',
-              fontFamily:F,transition:'all .2s',marginBottom:8}}>
-            + Add Custom Feature
-          </button>
-
-          <div style={{display:'flex',gap:10,marginTop:16}}>
-            <Btn variant="secondary" onClick={()=>{setPhase('discover');setFeatures([]);}}
-              disabled={phase==='submitting'} style={{flex:0}}>
-              ← Back
-            </Btn>
-            <Btn onClick={handleAnalyze} disabled={selectedCount===0||phase==='submitting'}
-              style={{flex:1}}>
-              {phase==='submitting' ? (
-                <span style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
-                  <Spin/> Starting Analysis...
-                </span>
-              ) : `Start Analysis — ${selectedCount} feature${selectedCount!==1?'s':''}`}
-            </Btn>
-          </div>
-        </>)}
-
-        {/* ═══════════ PHASE 3+4: RUNNING / COMPLETE ═══════════ */}
-        {(phase==='running'||phase==='complete') && (<>
-
-          {/* Complete banner */}
-          {isComp && (
-            <div style={{background:C.greenBg,border:`1px solid ${C.greenBdr}`,borderRadius:12,
-              padding:'26px 24px',textAlign:'center',marginBottom:16}}>
-              <div style={{width:44,height:44,borderRadius:'50%',margin:'0 auto 12px',
-                background:`${C.green}1a`,display:'flex',alignItems:'center',justifyContent:'center',
-                fontSize:20,color:C.green}}>✓</div>
-              <div style={{fontSize:17,fontWeight:700,color:C.green,marginBottom:6}}>Analysis Complete</div>
-              <div style={{fontSize:13,color:'#86efac',lineHeight:1.5}}>
-                {compEvt?.message||`${done} feature${done!==1?'s':''} analyzed`}
-              </div>
-              {(warns.length>0||crits.length>0) && (
-                <div style={{display:'flex',gap:10,justifyContent:'center',marginTop:14,flexWrap:'wrap'}}>
-                  {warns.length>0 && <span style={{padding:'3px 12px',borderRadius:20,fontSize:12,fontWeight:600,
-                    background:C.amberBg,color:C.amber,border:`1px solid ${C.amberBdr}`}}>
-                    ▲ {warns.length} warning{warns.length!==1?'s':''}</span>}
-                  {crits.length>0 && <span style={{padding:'3px 12px',borderRadius:20,fontSize:12,fontWeight:600,
-                    background:C.redBg,color:C.red,border:`1px solid ${C.redBdr}`}}>
-                    ✕ {crits.length} critical</span>}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Sheet link */}
-          <a href={sheetUrl} target="_blank" rel="noopener noreferrer" className="link-card"
-            style={{display:'block',textDecoration:'none',marginBottom:16,
-              background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,
-              padding:'18px 22px',transition:'border-color .2s'}}>
-            <div style={{fontSize:10,color:C.textMuted,textTransform:'uppercase',
-              letterSpacing:'.8px',fontWeight:600,marginBottom:8,
-              display:'flex',alignItems:'center',gap:6}}>
-              <span style={{fontSize:13}}>📊</span> Results Spreadsheet
-            </div>
-            <div style={{fontSize:13,color:C.blue,fontFamily:M,wordBreak:'break-all',lineHeight:1.4}}>
-              {sheetUrl}
-            </div>
-          </a>
-
-          {/* Progress */}
-          {!isComp && (
-            <div style={{marginBottom:20}}>
-              <div style={{display:'flex',justifyContent:'space-between',marginBottom:6,padding:'0 2px'}}>
-                <span style={{fontSize:12,color:C.textMuted}}>Processing features...</span>
-                <span style={{fontSize:12,color:C.blue,fontFamily:M,fontWeight:500}}>{done}/{total}</span>
-              </div>
-              <div style={{height:3,background:C.border,borderRadius:2,overflow:'hidden'}}>
-                <div style={{height:'100%',borderRadius:2,width:`${pct}%`,
-                  background:`linear-gradient(90deg,${C.navy},${C.blue})`,
-                  backgroundSize:'200% 100%',animation:'shimmer 2s linear infinite',
-                  transition:'width .8s ease'}}/>
-              </div>
-            </div>
-          )}
-
-          {/* Events */}
-          <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:'18px 14px'}}>
-            <Sec icon="◆" text="Event Log" style={{padding:'0 6px',marginBottom:10}}/>
-
-            {events.length===0&&!isComp && (
-              <div style={{textAlign:'center',padding:'28px 16px',color:C.textDim,fontSize:13}}>
-                <Spin size={16} color={C.textDim}/>
-                <div style={{marginTop:8}}>Waiting for events...</div>
-              </div>
-            )}
-
-            <div style={{maxHeight:420,overflowY:'auto',paddingRight:4}}>
-              {events.map((evt,i) => {
-                const s = evtStyle[evt.type]||evtStyle.system;
-                const isAl = evt.type==='alert_warning'||evt.type==='alert_critical';
-                return (
-                  <div key={i} className="evt-row" style={{display:'flex',gap:12,padding:'10px 12px',
-                    borderRadius:8,marginBottom:4,alignItems:'flex-start',
-                    background:s.bg,borderLeft:isAl?`3px solid ${s.c}`:'3px solid transparent'}}>
-                    <div style={{width:22,height:22,borderRadius:6,flexShrink:0,marginTop:1,
-                      display:'flex',alignItems:'center',justifyContent:'center',
-                      fontSize:10,fontWeight:700,color:s.c,background:`${s.c}18`}}>{s.i}</div>
-                    <div style={{fontFamily:M,fontSize:11,color:C.textDim,
-                      minWidth:64,marginTop:3,flexShrink:0}}>{fmtTime(evt.timestamp)}</div>
-                    <div style={{flex:1,minWidth:0}}>
-                      {evt.feature && <div style={{fontSize:12,fontWeight:600,color:s.c,marginBottom:2}}>
-                        {evt.feature}</div>}
-                      <div style={{fontSize:13,color:isAl?'#ddd':C.textSec,lineHeight:1.45,
-                        wordBreak:'break-word'}}>{evt.message}</div>
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={endRef}/>
-            </div>
-          </div>
-
-          {!isComp ? (
-            <div style={{display:'flex',alignItems:'center',justifyContent:'center',
-              gap:8,padding:'14px 0',fontSize:12,color:C.textDim}}>
-              <div style={{width:6,height:6,borderRadius:'50%',
-                background:pollErr?C.amber:C.blue,animation:'pulse 2s ease-in-out infinite'}}/>
-              <span>{pollErr?'Retrying...':`Polling every ${POLL_INTERVAL/1000}s`}</span>
-            </div>
-          ) : (
-            <div style={{textAlign:'center',marginTop:14}}>
-              <Btn variant="secondary" onClick={handleReset}>← New Analysis</Btn>
-            </div>
-          )}
-        </>)}
-      </div>
+      </>)}
     </div>
   );
 }
+
+ReactDOM.render(<App/>, document.getElementById('root'));
+</script>
+</body>
+</html>
