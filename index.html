@@ -1,776 +1,599 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Feature Discovery — SaaS Analyzer</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+import { useState, useEffect, useRef, useCallback } from 'react';
 
-  :root {
-    --bg: #f8f8f6;
-    --surface: #ffffff;
-    --border: #e4e2dd;
-    --text: #1a1a18;
-    --text-secondary: #6b6963;
-    --accent: #2563eb;
-    --accent-hover: #1d4ed8;
-    --accent-light: #eff4ff;
-    --suggested-bg: #fef9ec;
-    --suggested-border: #f0d680;
-    --danger: #dc2626;
-    --success: #16a34a;
-    --radius: 10px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
-  }
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+const DISCOVERY_URL = 'https://n8n.app.everythink.pro/webhook/feature-discovery';
+const ANALYSIS_URL  = 'https://n8n.app.everythink.pro/webhook/start-analysis';
+const MASTER_LOG_ID = '1JzJAaQsf7lZt9IYu0DjnYe3sadFjzc3NiuLHp_ZGypw';
+const POLL_INTERVAL = 8000;
 
-  body {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    min-height: 100vh;
-  }
+// ═══════════════════════════════════════════════════════════
+// BRAND
+// ═══════════════════════════════════════════════════════════
+const C = {
+  navy: '#17305d', navyLight: '#1e3f73', navyDark: '#0f2141',
+  blue: '#4c9acb', bluePale: '#4c9acb18', blueGlow: '#4c9acb44',
+  bg: '#0c1524', surface: '#111d32', surfaceRaised: '#152540',
+  border: '#1c3054', borderSoft: '#162a4a',
+  text: '#e8edf4', textSec: '#8fa3be', textMuted: '#5a7394', textDim: '#3e5a7a',
+  green: '#22c55e', greenBg: '#0d2818', greenBdr: '#15532d',
+  amber: '#f5a623', amberBg: '#2a1f0a', amberBdr: '#5c4216',
+  red: '#ef4444', redBg: '#2a0f0f', redBdr: '#6b1f1f',
+  white: '#fff',
+};
+const F = `'DM Sans',system-ui,sans-serif`;
+const M = `'IBM Plex Mono','SF Mono',monospace`;
 
-  .container {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 48px 24px 80px;
-  }
-
-  /* ─── Header ─── */
-  .page-header {
-    margin-bottom: 40px;
-  }
-  .page-header h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 6px;
-  }
-  .page-header p {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-  }
-
-  /* ─── Form ─── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 32px;
-    box-shadow: var(--shadow);
-  }
-
-  .form-group {
-    margin-bottom: 22px;
-  }
-  .form-group:last-of-type {
-    margin-bottom: 28px;
-  }
-  .form-group label {
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: var(--text);
-  }
-  .form-group input {
-    width: 100%;
-    padding: 10px 14px;
-    font-family: inherit;
-    font-size: 0.95rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg);
-    color: var(--text);
-    transition: border-color 0.15s, box-shadow 0.15s;
-    outline: none;
-  }
-  .form-group input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-  .form-group input::placeholder {
-    color: #a8a49d;
-  }
-  .form-hint {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-top: 4px;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 28px;
-    font-family: inherit;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-    width: 100%;
-  }
-  .btn-primary:hover:not(:disabled) {
-    background: var(--accent-hover);
-    box-shadow: var(--shadow-lg);
-  }
-  .btn-primary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  .btn-secondary {
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .btn-secondary:hover {
-    background: var(--bg);
-  }
-
-  /* ─── Loading ─── */
-  .loading-view {
-    text-align: center;
-    padding: 60px 20px;
-  }
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    margin: 0 auto 24px;
-  }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-  .loading-view h2 {
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-  .loading-view p {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-  }
-  .loading-steps {
-    margin-top: 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 280px;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: left;
-  }
-  .loading-step {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    transition: color 0.3s;
-  }
-  .loading-step.active {
-    color: var(--text);
-    font-weight: 500;
-  }
-  .loading-step.done {
-    color: var(--success);
-  }
-  .step-icon {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .step-icon svg { width: 16px; height: 16px; }
-
-  /* ─── Results / Checklist ─── */
-  .results-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin-bottom: 8px;
-  }
-  .results-header h2 {
-    font-size: 1.3rem;
-    font-weight: 700;
-  }
-  .feature-count {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-  }
-  .core-desc {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-bottom: 24px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .feature-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 28px;
-  }
-
-  .feature-item {
-    display: flex;
-    gap: 12px;
-    padding: 14px 16px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    transition: border-color 0.15s, box-shadow 0.15s;
-    align-items: flex-start;
-  }
-  .feature-item:hover {
-    border-color: #ccc;
-  }
-  .feature-item.suggested {
-    background: var(--suggested-bg);
-    border-color: var(--suggested-border);
-    margin-left: 28px;
-  }
-  .feature-item.deselected {
-    opacity: 0.45;
-  }
-
-  .feature-checkbox {
-    margin-top: 3px;
-    flex-shrink: 0;
-  }
-  .feature-checkbox input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--accent);
-    cursor: pointer;
-  }
-
-  .feature-body {
-    flex: 1;
-    min-width: 0;
-  }
-  .feature-name {
-    font-weight: 600;
-    font-size: 1.1 rem;
-    margin-bottom: 2px;
-  }
-  .feature-url {
-    font-size: 0.78rem;
-    color: var(--accent);
-    text-decoration: none;
-    word-break: break-all;
-  }
-  .feature-url:hover {
-    text-decoration: underline;
-  }
-  .feature-desc {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    margin-top: 2px;
-  }
-  .badge {
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-  }
-  .badge-feature {
-    background: var(--accent-light);
-    color: var(--accent);
-  }
-  .badge-suggested {
-    background: #fef3c7;
-    color: #92400e;
-  }
-  .badge-parent {
-    background: #f3f4f6;
-    color: #6b7280;
-    text-transform: none;
-    font-weight: 500;
-  }
-
-  /* ─── Add feature ─── */
-  .add-feature-section {
-    border-top: 1px solid var(--border);
-    padding-top: 20px;
-    margin-bottom: 28px;
-  }
-  .add-feature-toggle {
-    font-size: 0.88rem;
-    font-weight: 500;
-    color: var(--accent);
-    cursor: pointer;
-    background: none;
-    border: none;
-    font-family: inherit;
-    padding: 0;
-  }
-  .add-feature-toggle:hover {
-    text-decoration: underline;
-  }
-  .add-feature-form {
-    display: none;
-    margin-top: 14px;
-    padding: 16px;
-    background: var(--bg);
-    border-radius: 8px;
-    gap: 10px;
-  }
-  .add-feature-form.open {
-    display: flex;
-    flex-direction: column;
-  }
-  .add-feature-form input {
-    padding: 8px 12px;
-    font-family: inherit;
-    font-size: 0.88rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface);
-    outline: none;
-  }
-  .add-feature-form input:focus {
-    border-color: var(--accent);
-  }
-  .add-feature-actions {
-    display: flex;
-    gap: 8px;
-  }
-  .add-feature-actions .btn {
-    padding: 8px 16px;
-    font-size: 0.85rem;
-  }
-
-  /* ─── Error ─── */
-  .error-view {
-    text-align: center;
-    padding: 40px 20px;
-  }
-  .error-view .error-icon {
-    font-size: 2rem;
-    margin-bottom: 12px;
-  }
-  .error-view h2 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: var(--danger);
-  }
-  .error-view p {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin-bottom: 20px;
-  }
-
-  /* ─── Views toggle ─── */
-  .view { display: none; }
-  .view.active { display: block; }
-
-  /* ─── Responsive ─── */
-  @media (max-width: 600px) {
-    .container { padding: 28px 16px 60px; }
-    .card { padding: 22px 18px; }
-    .feature-item.suggested { margin-left: 14px; }
-    .page-header h1 { font-size: 1.4rem; }
-  }
-</style>
-</head>
-<body>
-
-<div class="container">
-  <div class="page-header">
-    <h1>Feature Discovery</h1>
-    <p>Analyze a SaaS product's features for Google Ads targeting.</p>
-  </div>
-
-  <!-- ═══ FORM VIEW ═══ -->
-  <div id="formView" class="view active">
-    <div class="card">
-      <form id="discoveryForm" autocomplete="off">
-        <div class="form-group">
-          <label for="clientName">Client Name</label>
-          <input type="text" id="clientName" placeholder="e.g. Octopus Deploy" required>
-        </div>
-        <div class="form-group">
-          <label for="homepageUrl">Homepage URL</label>
-          <input type="url" id="homepageUrl" placeholder="https://octopus.com" required>
-          <div class="form-hint">Main website URL — we'll scrape navigation and feature pages automatically.</div>
-        </div>
-        <div class="form-group">
-          <label for="userEmail">Your Email</label>
-          <input type="email" id="userEmail" placeholder="you@company.com" required>
-        </div>
-        <button type="submit" class="btn btn-primary" id="submitBtn">
-          Discover Features
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- ═══ LOADING VIEW ═══ -->
-  <div id="loadingView" class="view">
-    <div class="card">
-      <div class="loading-view">
-        <div class="spinner"></div>
-        <h2>Analyzing <span id="loadingClientName">...</span></h2>
-        <p>Scraping website and identifying features</p>
-        <div class="loading-steps">
-          <div class="loading-step active" id="step1">
-            <span class="step-icon"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/></svg></span>
-            <span>Scraping homepage</span>
-          </div>
-          <div class="loading-step" id="step2">
-            <span class="step-icon"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/></svg></span>
-            <span>Finding feature pages</span>
-          </div>
-          <div class="loading-step" id="step3">
-            <span class="step-icon"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/></svg></span>
-            <span>AI analysis in progress</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ RESULTS VIEW ═══ -->
-  <div id="resultsView" class="view">
-    <div class="card">
-      <div class="results-header">
-        <h2 id="resultsTitle">Features</h2>
-        <span class="feature-count" id="featureCount"></span>
-      </div>
-      <p class="core-desc" id="coreDescription"></p>
-
-      <div class="feature-list" id="featureList">
-        <!-- Features rendered here -->
-      </div>
-
-      <div class="add-feature-section">
-        <button class="add-feature-toggle" onclick="toggleAddFeature()">+ Add a feature manually</button>
-        <div class="add-feature-form" id="addFeatureForm">
-          <input type="text" id="newFeatureName" placeholder="Feature name">
-          <input type="url" id="newFeatureUrl" placeholder="URL (optional)">
-          <input type="text" id="newFeatureDesc" placeholder="Short description (optional)">
-          <div class="add-feature-actions">
-            <button class="btn btn-primary" onclick="addManualFeature()">Add</button>
-            <button class="btn btn-secondary" onclick="toggleAddFeature()">Cancel</button>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn btn-primary" id="startAnalysisBtn" onclick="submitFinalSelection()">
-        Start Full Analysis →
-      </button>
-    </div>
-  </div>
-
-  <!-- ═══ ERROR VIEW ═══ -->
-  <div id="errorView" class="view">
-    <div class="card">
-      <div class="error-view">
-        <div class="error-icon">⚠</div>
-        <h2>Something went wrong</h2>
-        <p id="errorMessage">Unable to analyze the website. Please check the URL and try again.</p>
-        <button class="btn btn-secondary" onclick="resetToForm()">← Try Again</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-// ╔══════════════════════════════════════════╗
-// ║  CONFIGURATION — Update these URLs       ║
-// ╚══════════════════════════════════════════╝
-const CONFIG = {
-  // Module A webhook — returns feature list
-  WEBHOOK_DISCOVER: 'https://n8n.app.everythink.pro/webhook/feature-discovery',
-  // Module B webhook — receives approved features (update when WF2 exists)
-  WEBHOOK_ANALYZE: 'https://n8n.app.everythink.pro/webhook/start-analysis',
-  // Request timeout in ms (webhook waits for full analysis)
-  TIMEOUT: 120000
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+const parseGviz = (text) => {
+  try {
+    const m = text.match(/setResponse\(([\s\S]*)\)\s*;?\s*$/);
+    const d = JSON.parse(m ? m[1] : text.replace(/^[^(]*\(/,'').replace(/\);?\s*$/,''));
+    if (!d.table?.rows) return [];
+    return d.table.rows.map(r => {
+      const c = r.c||[];
+      return { runId:c[0]?.v||'', timestamp:c[1]?.v||'', feature:c[2]?.v||'',
+               event:c[3]?.v||'', message:c[4]?.v||'', type:c[5]?.v||'' };
+    });
+  } catch { return []; }
 };
 
-// ─── State ───
-let discoveryResult = null;
-
-// ─── SVG icons ───
-const ICON_PENDING = '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/></svg>';
-const ICON_ACTIVE = '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>';
-const ICON_DONE = '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8l1.5 1.5 3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-
-// ─── View switching ───
-function showView(viewId) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(viewId).classList.add('active');
-}
-
-function resetToForm() {
-  showView('formView');
-  document.getElementById('discoveryForm').reset();
-}
-
-// ─── Loading step animation ───
-function setStep(stepNum) {
-  for (let i = 1; i <= 3; i++) {
-    const el = document.getElementById('step' + i);
-    el.classList.remove('active', 'done');
-    el.querySelector('.step-icon').innerHTML = ICON_PENDING;
-    if (i < stepNum) {
-      el.classList.add('done');
-      el.querySelector('.step-icon').innerHTML = ICON_DONE;
-    } else if (i === stepNum) {
-      el.classList.add('active');
-      el.querySelector('.step-icon').innerHTML = ICON_ACTIVE;
-    }
-  }
-}
-
-// ─── Form submit ───
-document.getElementById('discoveryForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const clientName = document.getElementById('clientName').value.trim();
-  let homepageUrl = document.getElementById('homepageUrl').value.trim();
-  const userEmail = document.getElementById('userEmail').value.trim();
-
-  if (!clientName || !homepageUrl || !userEmail) return;
-
-  // Ensure URL has protocol
-  if (!/^https?:\/\//i.test(homepageUrl)) {
-    homepageUrl = 'https://' + homepageUrl;
-  }
-
-  // Show loading
-  document.getElementById('loadingClientName').textContent = clientName;
-  showView('loadingView');
-  setStep(1);
-
-  // Simulate progress steps while waiting
-  const stepTimers = [
-    setTimeout(() => setStep(2), 3000),
-    setTimeout(() => setStep(3), 8000)
-  ];
-
+const fmtTime = (v) => {
+  if (!v) return '';
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
-
-    const response = await fetch(CONFIG.WEBHOOK_DISCOVER, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_name: clientName,
-        homepage_url: homepageUrl,
-        user_email: userEmail
-      }),
-      signal: controller.signal
-    });
-
-    clearTimeout(timeout);
-    stepTimers.forEach(t => clearTimeout(t));
-
-    if (!response.ok) {
-      throw new Error(`Server error (${response.status})`);
+    if (typeof v==='string' && v.startsWith('Date(')) {
+      const p = v.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)/);
+      if (p) return new Date(+p[1],+p[2],+p[3],+p[4],+p[5],+p[6])
+        .toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     }
+    const d = new Date(v);
+    return isNaN(d)?'':d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  } catch { return ''; }
+};
 
-    const data = await response.json();
+const evtStyle = {
+  system:        {c:C.blue, bg:C.bluePale, i:'◆'},
+  progress:      {c:C.blue, bg:C.bluePale, i:'▸'},
+  alert_warning: {c:C.amber,bg:C.amberBg,  i:'▲'},
+  alert_critical:{c:C.red,  bg:C.redBg,    i:'✕'},
+  complete:      {c:C.green,bg:C.greenBg,  i:'✓'},
+};
 
-    if (!data.success || !data.features || data.features.length === 0) {
-      throw new Error('No features found. The website may not have discoverable feature pages.');
-    }
+// ═══════════════════════════════════════════════════════════
+// SHARED UI
+// ═══════════════════════════════════════════════════════════
+const inp = {
+  width:'100%', padding:'9px 12px', background:C.bg, border:`1px solid ${C.border}`,
+  borderRadius:7, color:C.text, fontSize:13, fontFamily:F, outline:'none', transition:'border-color .2s',
+};
 
-    discoveryResult = data;
-    renderResults(data);
-    showView('resultsView');
+function Lbl({children,req}) {
+  return <label style={{display:'block',fontSize:11,fontWeight:600,color:C.textDim,
+    textTransform:'uppercase',letterSpacing:'.7px',marginBottom:6}}>
+    {children}{req&&<span style={{color:C.blue,marginLeft:3}}>*</span>}
+  </label>;
+}
 
-  } catch (err) {
-    stepTimers.forEach(t => clearTimeout(t));
-    document.getElementById('errorMessage').textContent =
-      err.name === 'AbortError'
-        ? 'Request timed out. The website may be too large or slow to scrape.'
-        : err.message || 'Unable to analyze the website.';
-    showView('errorView');
-  }
-});
+function Sec({icon,text,right,style={}}) {
+  return <div style={{fontSize:12,fontWeight:600,color:C.textSec,display:'flex',
+    alignItems:'center',gap:7,marginBottom:14,...style}}>
+    <span style={{color:C.blue,fontSize:10}}>{icon}</span>{text}
+    {right && <span style={{marginLeft:'auto',fontWeight:400,color:C.textDim}}>{right}</span>}
+  </div>;
+}
 
-// ─── Render results ───
-function renderResults(data) {
-  document.getElementById('resultsTitle').textContent = data.client_name || 'Features';
-  document.getElementById('coreDescription').textContent = data.core_description || '';
+function Spin({size=14,color=C.white}) {
+  return <span style={{display:'inline-block',width:size,height:size,
+    border:`2px solid ${color}33`,borderTopColor:color,borderRadius:'50%',animation:'spin .7s linear infinite'}}/>;
+}
 
-  const list = document.getElementById('featureList');
-  list.innerHTML = '';
+function Btn({children,onClick,disabled,variant='primary',style={}}) {
+  const base = variant==='primary' ? {
+    background:`linear-gradient(135deg,${C.navy},${C.navyLight})`,
+    border:`1px solid ${C.navyLight}`,color:C.white,fontWeight:600,
+  } : {
+    background:'transparent',border:`1px solid ${C.border}`,color:C.textMuted,fontWeight:500,
+  };
+  return <button className={variant==='primary'?'cta':'sec-btn'} onClick={onClick} disabled={disabled}
+    style={{padding:'12px 24px',borderRadius:10,fontSize:14,cursor:'pointer',
+      fontFamily:F,letterSpacing:'.3px',transition:'all .2s',
+      opacity:disabled?.45:1,...base,...style}}>{children}</button>;
+}
 
-  let totalCount = 0;
+// ═══════════════════════════════════════════════════════════
+// MAIN
+// ═══════════════════════════════════════════════════════════
+export default function App() {
+  // Phase: discover | discovering | review | submitting | running | complete
+  const [phase, setPhase] = useState('discover');
+  const [clientName, setClientName] = useState('');
+  const [homepageUrl, setHomepageUrl] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [coreDesc, setCoreDesc] = useState('');
+  const [features, setFeatures] = useState([]);
+  const [runId, setRunId] = useState('');
+  const [sheetUrl, setSheetUrl] = useState('');
+  const [events, setEvents] = useState([]);
+  const [error, setError] = useState('');
+  const [pollErr, setPollErr] = useState(false);
+  const pollRef = useRef(null);
+  const endRef = useRef(null);
+  const featCountRef = useRef(0);
 
-  data.features.forEach((feature, fi) => {
-    list.appendChild(createFeatureEl(feature, fi));
-    totalCount++;
-
-    if (feature.expansions && feature.expansions.length > 0) {
-      feature.expansions.forEach((exp, ei) => {
-        list.appendChild(createFeatureEl(exp, `${fi}-exp-${ei}`, true, feature.name));
-        totalCount++;
+  // ── Discovery ──
+  const handleDiscover = async () => {
+    if (!clientName.trim() || !homepageUrl.trim()) return;
+    setPhase('discovering'); setError('');
+    try {
+      const res = await fetch(DISCOVERY_URL, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          client_name: clientName.trim(),
+          homepage_url: homepageUrl.trim(),
+          user_email: userEmail.trim() || 'branko.j.98@gmail.com',
+        })
       });
-    }
-  });
+      if (!res.ok) throw new Error(`Server error (${res.status})`);
+      const data = await res.json();
+      if (!data.success) throw new Error('Discovery failed');
 
-  updateCount();
-}
+      setCoreDesc(data.core_description || '');
 
-function createFeatureEl(feature, idx, isSuggested = false, parentName = '') {
-  const div = document.createElement('div');
-  div.className = 'feature-item' + (isSuggested ? ' suggested' : '') + (!feature.selected ? ' deselected' : '');
-  div.dataset.idx = idx;
-
-  const checked = feature.selected !== false ? 'checked' : '';
-
-  div.innerHTML = `
-    <div class="feature-checkbox">
-      <input type="checkbox" ${checked} onchange="toggleFeature(this)">
-    </div>
-    <div class="feature-body">
-      <div class="feature-name">${esc(feature.name)}</div>
-      ${feature.url ? `<a class="feature-url" href="${esc(feature.url)}" target="_blank" rel="noopener">${esc(feature.url)}</a>` : ''}
-      ${feature.short_description ? `<div class="feature-desc">${esc(feature.short_description)}</div>` : ''}
-    </div>
-  `;
-
-  return div;
-}
-
-function toggleFeature(checkbox) {
-  const item = checkbox.closest('.feature-item');
-  item.classList.toggle('deselected', !checkbox.checked);
-  updateCount();
-}
-
-function updateCount() {
-  const total = document.querySelectorAll('.feature-item').length;
-  const selected = document.querySelectorAll('.feature-item input[type="checkbox"]:checked').length;
-  document.getElementById('featureCount').textContent = `${selected} of ${total} selected`;
-}
-
-// ─── Add feature manually ───
-function toggleAddFeature() {
-  document.getElementById('addFeatureForm').classList.toggle('open');
-}
-
-function addManualFeature() {
-  const name = document.getElementById('newFeatureName').value.trim();
-  if (!name) return;
-
-  const url = document.getElementById('newFeatureUrl').value.trim();
-  const desc = document.getElementById('newFeatureDesc').value.trim();
-
-  const feature = {
-    name,
-    url: url || '',
-    short_description: desc || '',
-    type: 'Manual',
-    selected: true,
-    expansions: []
+      // Flatten features + expansions into single list with selected state
+      const flat = [];
+      (data.features||[]).forEach(f => {
+        flat.push({
+          id: Math.random(), name: f.name, url: f.url||'',
+          short_description: f.short_description||'', type: f.type||'Feature',
+          selected: f.selected !== false, parent: '',
+        });
+        (f.expansions||[]).forEach(ex => {
+          flat.push({
+            id: Math.random(), name: ex.name, url: ex.url||f.url||'',
+            short_description: ex.short_description||'', type: 'Sub-feature',
+            selected: ex.selected === true, parent: f.name,
+          });
+        });
+      });
+      setFeatures(flat);
+      setPhase('review');
+    } catch (err) { setError(err.message); setPhase('discover'); }
   };
 
-  const list = document.getElementById('featureList');
-  const idx = 'manual-' + Date.now();
-  list.appendChild(createFeatureEl(feature, idx));
+  // ── Feature management ──
+  const toggleFeature = (id) => setFeatures(p=>p.map(f=>f.id===id?{...f,selected:!f.selected}:f));
+  const updateFeat = (id,k,v) => setFeatures(p=>p.map(f=>f.id===id?{...f,[k]:v}:f));
+  const removeFeat = (id) => setFeatures(p=>p.filter(f=>f.id!==id));
+  const addCustom = () => setFeatures(p=>[...p,{
+    id:Math.random(), name:'', url:'', short_description:'',
+    type:'Feature', selected:true, parent:'', custom:true,
+  }]);
 
-  // Clear form
-  document.getElementById('newFeatureName').value = '';
-  document.getElementById('newFeatureUrl').value = '';
-  document.getElementById('newFeatureDesc').value = '';
-  toggleAddFeature();
-  updateCount();
+  // ── Submit to WF2 ──
+  const handleAnalyze = async () => {
+    const selected = features.filter(f=>f.selected && f.name.trim());
+    if (selected.length===0) return;
+    setPhase('submitting'); setError('');
+    featCountRef.current = selected.length;
+    try {
+      const res = await fetch(ANALYSIS_URL, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          client_name: clientName.trim(),
+          core_description: coreDesc.trim(),
+          user_email: userEmail.trim() || 'branko.j.98@gmail.com',
+          features: selected.map(f=>({
+            name:f.name.trim(), url:f.url.trim(),
+            short_description:f.short_description.trim(), type:f.type,
+            parent_feature: f.parent||'',
+          }))
+        })
+      });
+      if (!res.ok) throw new Error(`Server error (${res.status})`);
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message||'Failed');
+      setRunId(data.run_id); setSheetUrl(data.sheet_url);
+      setPhase('running'); startPoll(data.run_id);
+    } catch (err) { setError(err.message); setPhase('review'); }
+  };
+
+  // ── Poll ──
+  const fetchEvts = useCallback(async (rid) => {
+    const tq = encodeURIComponent(`SELECT * WHERE A = '${rid}'`);
+    const url = `https://docs.google.com/spreadsheets/d/${MASTER_LOG_ID}/gviz/tq?tqx=out:json&sheet=Events&tq=${tq}&headers=1&_t=${Date.now()}`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok){setPollErr(true);return;}
+      const rows = parseGviz(await res.text());
+      setPollErr(false);
+      if (rows.length>0) {
+        setEvents(rows);
+        if (rows.some(r=>r.type==='complete')) {
+          setPhase('complete');
+          if (pollRef.current){clearInterval(pollRef.current);pollRef.current=null;}
+        }
+      }
+    } catch {setPollErr(true);}
+  },[]);
+
+  const startPoll = useCallback((rid)=>{
+    fetchEvts(rid);
+    pollRef.current = setInterval(()=>fetchEvts(rid), POLL_INTERVAL);
+  },[fetchEvts]);
+
+  useEffect(()=>()=>{if(pollRef.current)clearInterval(pollRef.current);},[]);
+  useEffect(()=>{
+    if(endRef.current&&phase==='running') endRef.current.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },[events,phase]);
+
+  const handleReset = () => {
+    if(pollRef.current){clearInterval(pollRef.current);pollRef.current=null;}
+    setPhase('discover'); setClientName(''); setHomepageUrl(''); setUserEmail('');
+    setCoreDesc(''); setFeatures([]); setRunId(''); setSheetUrl('');
+    setEvents([]); setError(''); setPollErr(false);
+  };
+
+  // ── Derived ──
+  const selectedCount = features.filter(f=>f.selected&&f.name.trim()).length;
+  const done = events.filter(e=>e.event==='FEATURE_DONE').length;
+  const total = featCountRef.current || selectedCount;
+  const warns = events.filter(e=>e.type==='alert_warning');
+  const crits = events.filter(e=>e.type==='alert_critical');
+  const compEvt = events.find(e=>e.type==='complete');
+  const isComp = phase==='complete';
+  const pct = isComp?100:Math.min(95,total>0?Math.round((done/total)*90)+5:3);
+
+  // ═══════════════════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════════════════
+  return (
+    <div style={{minHeight:'100vh',background:C.bg,color:C.text,fontFamily:F}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        body{background:${C.bg}}
+        input:focus,textarea:focus,select:focus{border-color:${C.blue}!important;outline:none}
+        ::placeholder{color:${C.textDim}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes slideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+        .cta:hover:not(:disabled){box-shadow:0 4px 24px ${C.blueGlow};transform:translateY(-1px)}
+        .cta:active:not(:disabled){transform:translateY(0)}
+        .sec-btn:hover:not(:disabled){border-color:${C.blue}!important;color:${C.blue}!important}
+        .feat-row:hover{background:${C.surfaceRaised}!important}
+        .add-btn:hover{border-color:${C.blue}!important;color:${C.blue}!important;background:${C.bluePale}!important}
+        .link-card:hover{border-color:${C.blue}!important}
+        .evt-row{animation:slideIn .3s ease forwards}
+        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:${C.borderSoft};border-radius:3px}
+      `}</style>
+
+      <div style={{maxWidth:800,margin:'0 auto',padding:'36px 20px 60px'}}>
+
+        {/* ═══ HEADER ═══ */}
+        <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:44}}>
+          <div style={{width:40,height:40,borderRadius:8,
+            background:`linear-gradient(135deg,${C.navy},${C.navyLight})`,
+            display:'flex',alignItems:'center',justifyContent:'center',
+            color:C.white,fontSize:17,fontWeight:700,boxShadow:`0 2px 12px ${C.navy}66`}}>I</div>
+          <div>
+            <div style={{fontSize:18,fontWeight:700,letterSpacing:'.4px'}}>IMPACTABLE</div>
+            <div style={{fontSize:11,color:C.textMuted,letterSpacing:'.3px',marginTop:1}}>
+              Automated Client Positioning & Market Analysis
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ STEPPER ═══ */}
+        {phase !== 'discover' && (
+          <div style={{display:'flex',gap:4,marginBottom:28}}>
+            {['Discovery','Review','Analysis'].map((label,i) => {
+              const stepPhases = [['discovering'],['review','submitting'],['running','complete']];
+              const active = stepPhases[i].includes(phase);
+              const past = i===0 ? ['review','submitting','running','complete'].includes(phase)
+                : i===1 ? ['running','complete'].includes(phase) : isComp;
+              return (
+                <div key={i} style={{flex:1,textAlign:'center'}}>
+                  <div style={{height:3,borderRadius:2,marginBottom:6,
+                    background:past?C.green:active?C.blue:C.border,transition:'background .4s'}}/>
+                  <span style={{fontSize:11,color:past?C.green:active?C.blue:C.textDim,
+                    fontWeight:active?600:400}}>{label}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {error && (
+          <div style={{background:C.redBg,border:`1px solid ${C.redBdr}`,borderRadius:10,
+            padding:'13px 18px',marginBottom:14,color:'#fca5a5',fontSize:13,
+            display:'flex',alignItems:'center',gap:10}}>
+            <span style={{fontSize:15}}>✕</span><span>{error}</span>
+          </div>
+        )}
+
+        {/* ═══════════ PHASE 1: DISCOVER ═══════════ */}
+        {(phase==='discover'||phase==='discovering') && (
+          <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:28}}>
+            <div style={{fontSize:15,fontWeight:600,color:C.text,marginBottom:4}}>
+              Start New Analysis
+            </div>
+            <div style={{fontSize:13,color:C.textMuted,marginBottom:24,lineHeight:1.5}}>
+              Enter the client's website URL and we'll automatically discover their product features.
+            </div>
+
+            <div style={{display:'flex',flexDirection:'column',gap:16}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                <div>
+                  <Lbl req>Client Name</Lbl>
+                  <input style={inp} placeholder="e.g. Kong, Sisense"
+                    value={clientName} onChange={e=>setClientName(e.target.value)}
+                    disabled={phase==='discovering'}/>
+                </div>
+                <div>
+                  <Lbl req>Homepage URL</Lbl>
+                  <input style={inp} placeholder="https://konghq.com"
+                    value={homepageUrl} onChange={e=>setHomepageUrl(e.target.value)}
+                    disabled={phase==='discovering'}/>
+                </div>
+              </div>
+              <div>
+                <Lbl>Your Email</Lbl>
+                <input style={inp} type="email" placeholder="email@company.com"
+                  value={userEmail} onChange={e=>setUserEmail(e.target.value)}
+                  disabled={phase==='discovering'}/>
+              </div>
+            </div>
+
+            <Btn onClick={handleDiscover}
+              disabled={!clientName.trim()||!homepageUrl.trim()||phase==='discovering'}
+              style={{width:'100%',marginTop:24}}>
+              {phase==='discovering' ? (
+                <span style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
+                  <Spin/> Discovering Features...
+                </span>
+              ) : 'Discover Features'}
+            </Btn>
+
+            {phase==='discovering' && (
+              <div style={{textAlign:'center',marginTop:14,fontSize:12,color:C.textDim}}>
+                Scanning website and analyzing product features. This takes 30-60 seconds...
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══════════ PHASE 2: REVIEW ═══════════ */}
+        {(phase==='review'||phase==='submitting') && (<>
+
+          {/* Core info */}
+          <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,
+            padding:'18px 22px',marginBottom:14}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+              <span style={{fontSize:13,fontWeight:600,color:C.text}}>{clientName}</span>
+              <span style={{fontSize:11,color:C.textDim,fontFamily:M}}>{homepageUrl}</span>
+            </div>
+            <div>
+              <Lbl>Core Description</Lbl>
+              <textarea style={{...inp,minHeight:56,resize:'vertical'}}
+                value={coreDesc} onChange={e=>setCoreDesc(e.target.value)}
+                disabled={phase==='submitting'}/>
+            </div>
+          </div>
+
+          {/* Feature list */}
+          <Sec icon="◆" text="Discovered Features"
+            right={`${selectedCount} of ${features.length} selected`}/>
+
+          <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:12}}>
+            {features.map((f) => (
+              <div key={f.id} className="feat-row" style={{
+                background:C.surface,border:`1px solid ${f.selected?C.border:C.borderSoft}`,
+                borderRadius:10,padding:'14px 16px',transition:'all .2s',
+                opacity:f.selected?1:.5,
+                marginLeft:f.parent?24:0,
+              }}>
+                <div style={{display:'flex',gap:12,alignItems:'flex-start'}}>
+                  {/* Checkbox */}
+                  <button onClick={()=>toggleFeature(f.id)} disabled={phase==='submitting'}
+                    style={{
+                      width:20,height:20,borderRadius:5,flexShrink:0,marginTop:1,cursor:'pointer',
+                      border:`2px solid ${f.selected?C.blue:C.border}`,
+                      background:f.selected?C.blue:'transparent',
+                      display:'flex',alignItems:'center',justifyContent:'center',
+                      color:C.white,fontSize:12,fontWeight:700,transition:'all .15s',
+                    }}>{f.selected?'✓':''}</button>
+
+                  <div style={{flex:1,minWidth:0}}>
+                    {/* Name + type badge */}
+                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                      {f.custom ? (
+                        <input style={{...inp,padding:'4px 8px',fontSize:13,fontWeight:600}}
+                          placeholder="Feature name..."
+                          value={f.name} onChange={e=>updateFeat(f.id,'name',e.target.value)}
+                          disabled={phase==='submitting'}/>
+                      ) : (
+                        <span style={{fontSize:13,fontWeight:600,color:C.text}}>{f.name}</span>
+                      )}
+                      <span style={{
+                        fontSize:10,padding:'2px 8px',borderRadius:12,fontWeight:600,flexShrink:0,
+                        background: f.type==='Feature'?C.bluePale:f.type==='Core'?`${C.navy}44`:`${C.amber}18`,
+                        color: f.type==='Feature'?C.blue:f.type==='Core'?C.textSec:C.amber,
+                      }}>{f.type}</span>
+                    </div>
+
+                    {/* Description */}
+                    <div style={{fontSize:12,color:C.textMuted,lineHeight:1.4,marginBottom:f.custom?6:0}}>
+                      {f.custom ? (
+                        <input style={{...inp,padding:'4px 8px',fontSize:12}}
+                          placeholder="Short description..."
+                          value={f.short_description} onChange={e=>updateFeat(f.id,'short_description',e.target.value)}
+                          disabled={phase==='submitting'}/>
+                      ) : f.short_description}
+                    </div>
+
+                    {f.custom && (
+                      <input style={{...inp,padding:'4px 8px',fontSize:12,marginTop:4}}
+                        placeholder="https://..."
+                        value={f.url} onChange={e=>updateFeat(f.id,'url',e.target.value)}
+                        disabled={phase==='submitting'}/>
+                    )}
+
+                    {/* URL */}
+                    {!f.custom && f.url && (
+                      <div style={{fontSize:11,color:C.textDim,fontFamily:M,marginTop:2,
+                        overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.url}</div>
+                    )}
+                  </div>
+
+                  {/* Remove for custom */}
+                  {f.custom && (
+                    <button onClick={()=>removeFeat(f.id)} disabled={phase==='submitting'}
+                      style={{background:'none',border:'none',color:C.textDim,cursor:'pointer',
+                        fontSize:16,padding:'2px 6px',borderRadius:4}}>×</button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button className="add-btn" onClick={addCustom} disabled={phase==='submitting'}
+            style={{width:'100%',padding:'10px',background:'transparent',
+              border:`1px dashed ${C.border}`,borderRadius:10,
+              color:C.textMuted,fontSize:13,fontWeight:500,cursor:'pointer',
+              fontFamily:F,transition:'all .2s',marginBottom:8}}>
+            + Add Custom Feature
+          </button>
+
+          <div style={{display:'flex',gap:10,marginTop:16}}>
+            <Btn variant="secondary" onClick={()=>{setPhase('discover');setFeatures([]);}}
+              disabled={phase==='submitting'} style={{flex:0}}>
+              ← Back
+            </Btn>
+            <Btn onClick={handleAnalyze} disabled={selectedCount===0||phase==='submitting'}
+              style={{flex:1}}>
+              {phase==='submitting' ? (
+                <span style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
+                  <Spin/> Starting Analysis...
+                </span>
+              ) : `Start Analysis — ${selectedCount} feature${selectedCount!==1?'s':''}`}
+            </Btn>
+          </div>
+        </>)}
+
+        {/* ═══════════ PHASE 3+4: RUNNING / COMPLETE ═══════════ */}
+        {(phase==='running'||phase==='complete') && (<>
+
+          {/* Complete banner */}
+          {isComp && (
+            <div style={{background:C.greenBg,border:`1px solid ${C.greenBdr}`,borderRadius:12,
+              padding:'26px 24px',textAlign:'center',marginBottom:16}}>
+              <div style={{width:44,height:44,borderRadius:'50%',margin:'0 auto 12px',
+                background:`${C.green}1a`,display:'flex',alignItems:'center',justifyContent:'center',
+                fontSize:20,color:C.green}}>✓</div>
+              <div style={{fontSize:17,fontWeight:700,color:C.green,marginBottom:6}}>Analysis Complete</div>
+              <div style={{fontSize:13,color:'#86efac',lineHeight:1.5}}>
+                {compEvt?.message||`${done} feature${done!==1?'s':''} analyzed`}
+              </div>
+              {(warns.length>0||crits.length>0) && (
+                <div style={{display:'flex',gap:10,justifyContent:'center',marginTop:14,flexWrap:'wrap'}}>
+                  {warns.length>0 && <span style={{padding:'3px 12px',borderRadius:20,fontSize:12,fontWeight:600,
+                    background:C.amberBg,color:C.amber,border:`1px solid ${C.amberBdr}`}}>
+                    ▲ {warns.length} warning{warns.length!==1?'s':''}</span>}
+                  {crits.length>0 && <span style={{padding:'3px 12px',borderRadius:20,fontSize:12,fontWeight:600,
+                    background:C.redBg,color:C.red,border:`1px solid ${C.redBdr}`}}>
+                    ✕ {crits.length} critical</span>}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Sheet link */}
+          <a href={sheetUrl} target="_blank" rel="noopener noreferrer" className="link-card"
+            style={{display:'block',textDecoration:'none',marginBottom:16,
+              background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,
+              padding:'18px 22px',transition:'border-color .2s'}}>
+            <div style={{fontSize:10,color:C.textMuted,textTransform:'uppercase',
+              letterSpacing:'.8px',fontWeight:600,marginBottom:8,
+              display:'flex',alignItems:'center',gap:6}}>
+              <span style={{fontSize:13}}>📊</span> Results Spreadsheet
+            </div>
+            <div style={{fontSize:13,color:C.blue,fontFamily:M,wordBreak:'break-all',lineHeight:1.4}}>
+              {sheetUrl}
+            </div>
+          </a>
+
+          {/* Progress */}
+          {!isComp && (
+            <div style={{marginBottom:20}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:6,padding:'0 2px'}}>
+                <span style={{fontSize:12,color:C.textMuted}}>Processing features...</span>
+                <span style={{fontSize:12,color:C.blue,fontFamily:M,fontWeight:500}}>{done}/{total}</span>
+              </div>
+              <div style={{height:3,background:C.border,borderRadius:2,overflow:'hidden'}}>
+                <div style={{height:'100%',borderRadius:2,width:`${pct}%`,
+                  background:`linear-gradient(90deg,${C.navy},${C.blue})`,
+                  backgroundSize:'200% 100%',animation:'shimmer 2s linear infinite',
+                  transition:'width .8s ease'}}/>
+              </div>
+            </div>
+          )}
+
+          {/* Events */}
+          <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:'18px 14px'}}>
+            <Sec icon="◆" text="Event Log" style={{padding:'0 6px',marginBottom:10}}/>
+
+            {events.length===0&&!isComp && (
+              <div style={{textAlign:'center',padding:'28px 16px',color:C.textDim,fontSize:13}}>
+                <Spin size={16} color={C.textDim}/>
+                <div style={{marginTop:8}}>Waiting for events...</div>
+              </div>
+            )}
+
+            <div style={{maxHeight:420,overflowY:'auto',paddingRight:4}}>
+              {events.map((evt,i) => {
+                const s = evtStyle[evt.type]||evtStyle.system;
+                const isAl = evt.type==='alert_warning'||evt.type==='alert_critical';
+                return (
+                  <div key={i} className="evt-row" style={{display:'flex',gap:12,padding:'10px 12px',
+                    borderRadius:8,marginBottom:4,alignItems:'flex-start',
+                    background:s.bg,borderLeft:isAl?`3px solid ${s.c}`:'3px solid transparent'}}>
+                    <div style={{width:22,height:22,borderRadius:6,flexShrink:0,marginTop:1,
+                      display:'flex',alignItems:'center',justifyContent:'center',
+                      fontSize:10,fontWeight:700,color:s.c,background:`${s.c}18`}}>{s.i}</div>
+                    <div style={{fontFamily:M,fontSize:11,color:C.textDim,
+                      minWidth:64,marginTop:3,flexShrink:0}}>{fmtTime(evt.timestamp)}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      {evt.feature && <div style={{fontSize:12,fontWeight:600,color:s.c,marginBottom:2}}>
+                        {evt.feature}</div>}
+                      <div style={{fontSize:13,color:isAl?'#ddd':C.textSec,lineHeight:1.45,
+                        wordBreak:'break-word'}}>{evt.message}</div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={endRef}/>
+            </div>
+          </div>
+
+          {!isComp ? (
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',
+              gap:8,padding:'14px 0',fontSize:12,color:C.textDim}}>
+              <div style={{width:6,height:6,borderRadius:'50%',
+                background:pollErr?C.amber:C.blue,animation:'pulse 2s ease-in-out infinite'}}/>
+              <span>{pollErr?'Retrying...':`Polling every ${POLL_INTERVAL/1000}s`}</span>
+            </div>
+          ) : (
+            <div style={{textAlign:'center',marginTop:14}}>
+              <Btn variant="secondary" onClick={handleReset}>← New Analysis</Btn>
+            </div>
+          )}
+        </>)}
+      </div>
+    </div>
+  );
 }
-
-// ─── Submit final selection ───
-async function submitFinalSelection() {
-  const items = document.querySelectorAll('.feature-item');
-  const selectedFeatures = [];
-
-  items.forEach(item => {
-    const cb = item.querySelector('input[type="checkbox"]');
-    if (!cb.checked) return;
-
-    const name = item.querySelector('.feature-name')?.textContent || '';
-    const url = item.querySelector('.feature-url')?.textContent || '';
-    const desc = item.querySelector('.feature-desc')?.textContent || '';
-    const isSuggested = item.classList.contains('suggested');
-    const parentBadge = item.querySelector('.badge-parent');
-    const parent = parentBadge ? parentBadge.textContent.replace('from: ', '') : '';
-
-    selectedFeatures.push({
-      name,
-      url,
-      short_description: desc,
-      type: isSuggested ? 'Suggested' : item.dataset.idx?.startsWith('manual') ? 'Manual' : 'Feature',
-      parent_feature: parent
-    });
-  });
-
-  if (selectedFeatures.length === 0) {
-    alert('Select at least one feature to analyze.');
-    return;
-  }
-
-  const btn = document.getElementById('startAnalysisBtn');
-  btn.disabled = true;
-  btn.textContent = 'Submitting...';
-
-  try {
-    const payload = {
-      client_name: discoveryResult?.client_name || '',
-      core_description: discoveryResult?.core_description || '',
-      user_email: discoveryResult?.user_email || '',
-      features: selectedFeatures
-    };
-
-    const response = await fetch(CONFIG.WEBHOOK_ANALYZE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) throw new Error('Submit failed');
-
-    btn.textContent = '✓ Analysis Started';
-    btn.style.background = 'var(--success)';
-
-  } catch (err) {
-    btn.disabled = false;
-    btn.textContent = 'Start Full Analysis →';
-    alert('Failed to submit. Please try again.');
-  }
-}
-
-// ─── Utility ───
-function esc(str) {
-  const d = document.createElement('div');
-  d.textContent = str || '';
-  return d.innerHTML;
-}
-</script>
-
-</body>
-</html>
